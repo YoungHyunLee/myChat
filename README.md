@@ -12,7 +12,7 @@ numbernori@gmail.com으로 메일주시면 확인 후 연락드리겠습니다.
 
 Hi!
 This repository is my study about html5 canvas and node.js.
-If ask me?
+If you ask me?
 plz send to email numbernori@gmail.com.
 thx! xD~
 
