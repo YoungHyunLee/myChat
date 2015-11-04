@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 숫자놀이(Numbernori)의 canvas&openui5 관련 공부용 저장소입니다.
 
 Start : 2015.10.28
@@ -15,7 +15,11 @@ This repository is my study about html5 canvas and node.js.
 If ask me?
 plz send to email numbernori@gmail.com.
 thx! xD~
+
+=======
+# canvas
+기존에 canvas 공부하다 만든 예제 소스입니다(현재는 업데이트 안 함).
+
 =======
 # myChat
 개인용으로 작성하고 있는 node 채팅방입니다. 소스는 node와 mongodb를 이용합니다.
->>>>>>> 44fa92b210abdacb393a98d52d2f2f98231b2df5
