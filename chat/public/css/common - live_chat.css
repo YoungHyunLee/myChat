@@ -1,0 +1,102 @@
+@charset "utf-8";
+
+
+html,body{margin:0;padding:0;height:100%;}
+body{font:12px/1.5 Arial,verdana, "굴림", Gulim, "돋움", Dotum,  sans-serif;background:#fff;color:#000;}
+dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,form,fieldset,input,textarea,p,blockquote,tbody,tfoot,thead,th,td{margin:0;padding:0;}
+input,textarea,select,td,th{font:12px/1.5 Arial,"돋움", Dotum, "굴림", Gulim, sans-serif;color:#000;vertical-align:middle;}
+h1,h2,h3,h4,h5,h6{font-weight:normal;font-size:100%;}
+table{width:100%;table-layout:fixed;border-spacing:0;border-collapse:collapse;}
+ol,ul,li{list-style:none;}
+hr, legend, caption, .hidden{position:absolute;left:-5000px;top:0;visibility:hidden;overflow:hidden;line-height:0.1%;font-size:0.1%;width:0.1%;height:0.1%;}
+caption{position:relative;}
+img,fieldset{border:0 none;}
+label,button{cursor:pointer;}
+em,address{font-style:normal;}
+a:link,a:visited{color:#767676;text-decoration:none;}
+a:hover,a:active,a:focus{text-decoration:none;} 
+
+
+/* 스킵네비게이션 */
+#accessibility .hidden{display:block;visibility:visible;background:#000;color:#fff;text-align:center;text-decoration:none;}
+#accessibility .hidden:focus{padding: 10px 0; position:static; visibility:visible; overflow:visible; width:100%; font-weight:bold; font-size:12px;}
+
+/* #container와 #wrap에 있는 overflow:hidden을 넣어주면 스크롤바 삭제됨.   */
+
+/* input */
+
+button{overflow:visible;margin:0;padding:0;border:0;background:none;white-space:nowrap;cursor:pointer;}
+button::-moz-focus-inner{padding:0;border:0;}
+
+.formText, .formPassword{
+	border:1px solid #ccc;
+	height:16px;
+	padding:2px 5px 1px;
+	line-height:16px;
+}
+.formSubmit{
+	overflow:visible;
+	cursor:pointer;
+}
+
+.formCheckbox, .formRadio{
+	width:13px;
+	height:13px;
+}
+.formSubmit-moz-focus-inner{padding:0;border:0}
+select{
+	padding:2px 2px 2px 0;
+}
+textarea{
+	overflow:auto;
+	overflow-x:hidden;
+	border:1px solid #ccc;
+	resize:none;
+}
+
+/* layout */
+body{width:240px;margin:0 auto;padding:100px 0 0;}
+#wrap{width:235px;border-radius:4px 4px 0 0;border:1px solid #767982;background-color:#fff;}
+#header{background:url('../images/header_bg.png') repeat-x;padding:7px 8px 8px 14px;height:20px;border-radius:4px 4px 0 0;font-size:0;}
+#header h1{width:22px;height:21px;float:left;overflow:hidden;}
+#header p{float:left;padding:0 0 0 7px;color:#fff;line-height:21px;font-size:12px;}
+#header .button_wrap{float:right;}
+#header .top_btn{width:20px;height:20px;overflow:hidden;font-size:0;}
+.top_btn span{display:inline-block;}
+.top_btn.size{}
+.top_btn.close{margin-left:5px;}
+.top_btn.close img{margin:0 0 0 -23px;}
+#header .on img{margin:0 0 0 -35px;}
+
+
+
+/* 이하는 좀 다듬자. */
+#message{padding:8px 14px 6px;background-color:#f1f1f1;}
+#message p{color:#646464;}
+
+#container{padding:0 13px 11px;font-size:11px;}
+#container div.top{margin:12px 0 0;border:1px solid #bdbdbd;border-radius:8px;padding:6px 7px 20px;position:relative;height:110px;overflow:auto;}
+#container div.top p{padding:3px 0;}
+#container div.top .me span.people{color:#0043dc;}
+#container div.top .other span.people{color:#da0219;}
+#container div.top div.ing{position:absolute;bottom:2px;left:7px;color:#c0c0c0;font-style:italic;background:#fff;width:180px;}
+
+#container div.middle{margin:13px 0 0 -3px;border:3px solid #f1f1f1;}
+#container div.middle input{border:1px solid #bcbcbc;width:197px;height:25px;padding:0 0 0 9px;color:#949494;}
+
+#container div.bottom{margin:9px 0 0;height:28px;}
+#container div.bottom div.left{float:left;}
+#container div.bottom div.right{float:right;}
+#container div.bottom div.right address{line-height:28px;color:#7f7f7f;padding:0 0 0 13px;background:url('../images/phone.png') no-repeat 0 7px;}
+
+
+
+
+
+
+
+
+
+
+
+

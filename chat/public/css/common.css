@@ -1,0 +1,264 @@
+@charset "utf-8";
+html,body,div,span,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,abbr,address,cite,code,del,dfn,em,img,ins,kbd,q,samp,small,strong,sub,sup,var,b,i,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td,article,aside,canvas,details,figcaption,figure,footer,header,hgroup,menu,nav,section,summary,time,mark,audio,video{margin:0;padding:0;outline:0;}
+html,body{height:100%;}
+body{font:1rem/1.5 Arial, "맑은 고딕", Dotum, "굴림", Gulim, sans-serif;background:#fff;color:#767676;}
+h1,h2,h3,h4,h5,h6{font-weight:normal;font-size:100%;}
+table{width:100%;table-layout:fixed;border-spacing:0;border-collapse:collapse;}
+ol,ul,li{list-style:none;}
+caption{position:relative;}
+img,fieldset{border:0 none;}
+label,button{cursor:pointer;}
+button{border:0;background:none;padding:0;}
+:focus{outline:none;}
+button::-moz-focus-inner{padding:0;border:0}/* Firefox Bug Fix */
+em,address{font-style:normal;}
+a:link,a:visited{color:#000;text-decoration:none;}
+a:hover,a:active,a:focus{text-decoration:none;}
+abbr[title],dfn[title]{/*border-bottom:1px dotted;*/cursor:help}
+.clearfix:after{content:"";clear:both;display:block;}
+.hidden, legend{position:absolute;left:-5000px;top:0;visibility:hidden;overflow:hidden;line-height:0.1%;font-size:0.1%;width:0.1%;height:0.1%;}
+
+/*
+	크롬 아이폰 6s가 375 * 667 이며 ratio는 2.     
+*/
+
+/* global */
+html{font-size:16px;}
+#wrap{height:100%;background:url(../images/bg.jpg) no-repeat;background-size:cover;}
+.startPage{display:none;height:100%;position:relative;}
+.startPage.on{display:block;}
+.off, .mainWrap{display:none;}
+.on{display:block;}
+.scrollArea{position:absolute;top:0;left:0;right:0;bottom:0;overflow:auto;}
+.mainWrap{position:relative;height:100%;background-color:#fff;}
+.headArea{position:absolute;top:0;left:0;right:0;height:61px;box-sizing:border-box;border-bottom:1px solid #cecece;}
+.gnbArea{position:absolute;bottom:0;left:0;right:0;height:41px;}
+
+/* 공통 정의 */
+.ctmTextField{box-sizing:border-box;padding:3px 5px;border:1px solid #ccc;border-radius:3px;box-shadow:inset 0 1px 2px #aaa;}
+.ctmTextField:focus{border-color:#51a7e8;box-shadow:inset 0 1px 2px rgba(0,0,0,0.075),0 0 5px rgba(81,167,232,0.5);}
+
+.ctmBtn{vertical-align:middle;background-color:#eee;background-image:-webkit-linear-gradient(#fcfcfc, #eee);background-image:linear-gradient(#fcfcfc, #eee);border-radius:3px;border:1px solid #ccc;color:#333;font-size:0.8125rem;font-weight:bold;height:2.5rem;padding:0.25rem;line-height:2rem;}
+.ctmBtn:hover, .ctmBtn:focus, .ctmBtn:active{background-color:#ddd;background-image:-webkit-linear-gradient(#eee, #ddd);background-image:linear-gradient(#eee, #ddd);}
+.ctmBtn.other{border:0;background-image:-webkit-linear-gradient(#829aa8, #46AAE6);background-image:linear-gradient(#829aa8, #46AAE6);color:#fff;}
+.ctmBtn.other:hover, .ctmBtn.other:focus, .ctmBtn.other:active{background-image:-webkit-linear-gradient(#A6C4D6 #46AAE6);background-image:linear-gradient(#A6C4D6, #46AAE6);}
+
+
+/* 시작 페이지 */
+.header{}
+
+.logoWrap{width:279px;height:65px;margin:0 auto;font-size:0;padding-top:50px;padding-bottom:100px;}
+.logoWrap img{width:100%;height:65px;}
+
+.main{}
+.signWrap{margin:0 auto;width:90%;}
+.mainSignBtn{width:100%;height:100px;position:relative;border-radius:5px;box-shadow:0px 0px 3px #eee;margin-bottom:50px;}
+.mainSignBtn .icon:after{background:no-repeat;}
+.mainSignBtn.fb{background-color:#3e60aa;}
+.mainSignBtn.email{background-color:#fff;}
+.mainSignBtn .icon{position:absolute;top:0;left:0;width:100px;height:100px;border-right:1px solid #dfdfdf;}
+.mainSignBtn .icon:after{content:"";display:block;position:absolute;top:50%;left:50%;-webkit-transform:translate(-50%, -50%);transform:translate(-50%, -50%);}
+.mainSignBtn.fb .icon:after{background-image:url(../images/mainSign_fbl.png);width:22px;height:44px;}
+.mainSignBtn.email .icon:after{background-image:url(../images/mainSign_email.png);width:36px;height:26px;}
+.mainSignBtn em{font-size:1.5rem;display:block;margin-left:100px;text-align:center;line-height:100px;}
+.mainSignBtn.fb em{color:#fff;}
+.mainSignBtn.email em{color:#383c3d;}
+
+.startFooter{position:absolute;bottom:0;left:0;right:0;}
+.signUpBtn{position:absolute;bottom:30px;left:50%;-webkit-transform:translate(-50%, 0);transform:translate(-50%, 0);border:2px solid #fff;border-radius:30px;width:260px;height:60px;font-size:1.5rem;color:#fff;}
+.helpBtn{position:absolute;bottom:15px;right:15px;border:2px solid #fff;border-radius:20px;width:40px;height:40px;font-size:1.5rem;color:#fff;}
+
+/* 팝업 공통 */
+.layerPop{position:absolute;top:0;left:0;right:0;bottom:0;z-index:1000;visibility:hidden;opacity:0;-webkit-transition:all .3s;transition:all .3s;}
+.layerPop.on{visibility:visible;opacity:1;}
+.popShadow{position:absolute;top:0;left:0;right:0;bottom:0;background-color:rgba(0,0,0,.5);}
+.popContainer{position:absolute;top:50%;left:50%;-webkit-transform:translate(-50%, -50%);transform:translate(-50%, -50%);width:500px;}
+
+.popHeader{height:3rem;background-color:#829aa8;border:1px solid #768995;padding:0.5rem 1rem;box-sizing:border-box;border-radius:3px 3px 0 0;}
+.popHeadText{color:#fff;font-weight;bold;line-height:2rem;font-size:1.125rem;}
+.popContent{background-color:#fff;border:1px solid #d8dee2;border-top:0;padding:1rem;font-size:0.875rem;}
+
+.popClose{display:block;text-align:center;font-family:Verdana;position:absolute;top:1rem;right:1rem;border:1px solid #fff;border-radius:100%;color:#fff;font-size:0.75rem;line-height:1rem;width:1rem;height:1rem;}
+.popClose:link, .popClose:visited{color:#fff;}
+
+/* 로그인 - email */
+.loginPage.email{}
+.loginPage.email .popContainer{width:80%;max-width:500px;}
+.loginPage.email .popContainer label{color:#000;}
+.loginPage.email .popContainer .ctmTextField{height:2rem;width:100%;margin:5px 0 10px;display:block;}
+
+.signInBtnArea{margin-top:1.5rem;font-size:0;}
+.signInBtnArea .ctmBtn{}
+.signInBtnArea .emailSubmit{}
+.signInBtnArea .forgotPassword{margin-left:0.5rem;}
+
+
+/* 회원가입 - email */
+.signUpPage{display:none;background-color:#fff;position:absolute;top:0;bottom:0;left:100%;z-index:50;width:100%;-webkit-transition:left .3s;transition:left .3s;}
+.signUpPage.on{display:block;left:0%;}
+.signUpPage .head{font-size:1.5rem;color:#222;font-weight:bold;text-align:center;padding:3rem 4rem;background-color:#f6f6f6;border-bottom:1px solid #ddd;margin-bottom:1rem;}
+.signUpPage .stepStatusArea{padding-bottom:2rem;}
+.signUpPage .stepStatusArea ol{position:relative;border:1px solid #ddd;width:60%;min-width:300px;margin:0 auto;border-radius:5px;}
+.signUpPage .stepStatusArea ol:after{content:"";display:block;clear:both;}
+.signUpPage .stepStatusArea ol:before{content:"";display:block;position:absolute;left:50%;bottom:0;top:0;margin-left:-1px;border-left:1px solid #ddd;}
+.signUpPage .stepStatusArea li{font-size:0.9375rem;color:#666;padding:5px 10px;display:inline-block;width:50%;box-sizing:border-box;float:left;}
+
+.signUpPage .stepStatusArea em{font-size:1.125rem;font-weight:bold;}
+
+.signUpPage .writeSignUpArea{width:80%;margin:0 auto;}
+.signUpPage .writeSignUpArea .formHeadText{font-size:1rem;font-weight:bold;}
+.signUpPage .writeSignUpArea label{font-size:0.9375rem;display:block;}
+.signUpPage .writeSignUpArea input{border:1px solid #ddd;border-radius:3px;padding:0 10px;box-sizing: border-box;background:#fafafa;height:2rem;width:100%;}
+.signUpPage .writeSignUpArea input:focus{background-color:#fff;border-color:#43B5E8;}
+.signUpPage .writeSignUpArea p{font-size:0.8125rem;color:#ccc;margin-bottom:2rem;}
+.signUpPage .signUpBtnArea{width:100%;height:4.5rem;text-align:center;}
+.signUpPage .signUpSubmitBtn{height:2.5rem;padding:5px 10px;border-radius:3px;color:#fff;font-size:0.875rem;background-image:-webkit-linear-gradient(#8add6d, #60b044);background-image:linear-gradient(#8add6d, #60b044);}
+.signUpPage .signUpSubmitBtn:active{text-shadow:0 1px 0 rgba(0,0,0,0.15);background-color:#569e3d;background-image:none;border-color:#418737;}
+
+
+/* lnb(header) */
+.lnbBar{height:100%;background-color:#fff;position:relative;z-index:99;}
+.lnbBar .topMenuBtn, .lnbBar .searchFireBtn{position:absolute;top:0;height:100%;width:60px;}
+.lnbBar .topMenuBtn{left:0;}
+.lnbBar .searchFireBtn{right:0;}
+.topMenuBtn .icon, .searchFireBtn .icon{display:block;position:absolute;top:50%;left:50%;-webkit-transform:translate(-50%, -50%);transform:translate(-50%, -50%);}
+.topMenuBtn .icon{background:url(../images/nav_menu.png) no-repeat;width:38px;height:36px;}
+.searchFireBtn .icon{float:right;background:url(../images/nav_search.png) no-repeat;width:32px;height:32px;}
+.lnbHead{position:absolute;top:50%;left:50%;-webkit-transform:translate(-50%, -50%);transform:translate(-50%, -50%);}
+.lnbHead .lnbHeadText a{color:#36afe6;font-size:2rem;display:inline-block;}
+
+.searchFriendArea{display:none;position:absolute;top:0%;width:100%;z-index:1;height:50px;}
+.searchFriendArea.on{display:block;-webkit-transition:top .3s;transition:top .3s;top:100%;background-color:rgba(255,255,255,.7);}
+.searchFriendArea .searchField{border:1px solid #dfdfdf;border-radius:5px;padding:3px 10px;height:30px;width:70%;position:absolute;top:50%;left:5%;-webkit-transform:translate(0, -50%);transform:translate(0, -50%);}
+.searchFriendArea .searchBtnWrap{position:absolute;top:50%;right:5%;-webkit-transform:translate(0, -50%);transform:translate(0, -50%);width:20%;height:30px;}
+.searchFriendArea .searchBtn{color:#707070;padding:3px 10px;border:1px solid #dfdfdf;background-color:#fff;border-radius:5px;height:30px;position:absolute;top:50%;left:50%;-webkit-transform:translate(-50%, -50%);transform:translate(-50%, -50%);}
+
+/* gnb(footer) */
+.gnbArea{}
+.gnbBar{border-top:1px solid #999;}
+.gnbBar ul:after{content:"";display:block;clear:both;}
+.gnbBar .gnbList{float:left;width:33.3%;border-left:1px solid #999;box-sizing:border-box;text-align:center;}
+.gnbBar .gnbList:first-child{border-left:0;}
+
+.gnbBtn{width:100%;font-size:2rem;text-align:center;line-height:40px;color:#333;}
+
+/* 친구 목록 & 대화 목록 공통 */
+.waitArea{top:61px;bottom:41px;display:none;}
+.waitArea.on{display:block;}
+.friendsList{}
+.friendList{height:80px;position:relative;}
+.friendList a{display:block;height:100%;}
+.friendImg{position:absolute;top:10px;left:0;width:60px;height:60px;margin:0 10px;border-radius:30px;overflow:hidden;}
+.friendImg img{position:absolute;top:50%;left:50%;-webkit-transform:translate(-50%, -50%);transform:translate(-50%, -50%);width:100%;}
+.friendText{margin-left:80px;}
+.friendText .name{font-size:1.375rem;color:#000;line-height:80px;}
+.friendText .statusMsg{position:absolute;top:50%;right:15px;-webkit-transform:translate(0, -50%);transform:translate(0, -50%);display:inline-block;box-sizing:border-box;background-color:#43B5E8;color:#fff;border-radius:10px;padding:3px 10px;}
+
+/* 친구 목록 */
+.waitArea.friends{}
+
+/* 대화 목록 */
+.waitArea.talkListArea .friendText{height:100%;box-sizing:border-box;padding:10px 10px 0 0;position:relative;border-bottom:1px solid #ddd;}
+.friendText .names{font-weight:bold;line-height:1;font-size:1.125rem;max-width:calc(100% - 6rem);display:inline-block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.friendText .talkNum{font-size:0.875rem;color:#f0f;display:inline-block;vertical-align:top;}
+.friendText .lastMsgDate{position:absolute;top:10px;right:10px;color:#666;font-size:0.875rem;}
+.friendText .talkMsg{display:block;color:#333;font-size:0.875rem;line-height:1.3;max-height:2.3rem;overflow:hidden;}
+
+/* 대화창 */
+.waitArea.talkArea{top:61px;background-color:#8685CE;position:absolute;left:0;right:0;bottom:0;z-index:1000;}
+.talkArea>.scrollArea{bottom:30px;}
+.talkListArea .talkList{position:relative;}
+.talkListArea .talkList a{display:block;}
+.talkListArea .talkList .talkFriendImg{position:absolute;top:5px;left:0;width:30px;height:30px;margin:0 10px;border-radius:100%;overflow:hidden;}
+.talkListArea .talkList .talkFriendImg img{position:absolute;top:50%;left:50%;-webkit-transform:translate(-50%, -50%);transform:translate(-50%, -50%);width:100%;}
+.talkTextArea{min-height:40px;margin-left:50px;}
+.talkTextArea .name{display:block;font-size:0.75rem;color:#fff;margin:5px 0;}
+.talkTextArea ol:after{content:'';display:block;clear:both;}
+.talkTextArea .talkText{max-width:70%;background-color:#fff;border-radius:3px;padding:3px 10px;float:left;clear:both;margin-bottom:3px;box-sizing:border-box;min-height:26px;font-size:0.75rem;line-height:20px;}
+
+.talkListArea .talkList.me .talkFriendImg{left:auto;right:0;}
+.talkListArea .talkList.me .talkTextArea{margin-left:0;margin-right:50px;}
+.talkListArea .talkList.me .talkTextArea .name{text-align:right;}
+.talkListArea .talkList.me .talkTextArea .talkText{float:right;background-color:#F5DAC7;}
+
+.textInputArea{display:none;}
+.talkArea .textInputArea{display:block;position:absolute;bottom:0;left:0;right:0;z-index:10;height:30px;background-color:#eee;}
+.textInputArea .textInputFieldArea{height:26px;position:absolute;top:50%;left:30px;right:1%;-webkit-transform:translate(0, -50%);transform:translate(0, -50%);} 
+.textInputArea .textInputField{box-shadow:none;width:100%;box-sizing:border-box;background-color:#fff;border:1px solid #dfdfdf;border-radius:5px;padding:3px 100px 3px 10px;}
+.textInputArea .sendBtnWrap{position:absolute;top:50%;right:1%;z-index:5;-webkit-transform:translate(0, -50%);transform:translate(0, -50%);height:23px;}
+.textInputArea .emoticonBtn{padding:0;width:26px;height:23px;float:left;line-height:23px;}
+.textInputArea .sendBtn{color:#707070;padding:0;width:30px;height:23px;border-radius:0 5px 5px 0;background-color:#252;color:#fff;font-size:0.75rem;float:left;}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
