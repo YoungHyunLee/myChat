@@ -1,5 +1,5 @@
 
-숫자놀이(Numbernori)의 canvas&openui5 관련 공부용 저장소입니다.
+숫자놀이(Numbernori)의 canvas&Node 관련 공부용 저장소입니다.
 
 Start : 2015.10.28
 
