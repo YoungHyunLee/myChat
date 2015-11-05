@@ -130,7 +130,7 @@ var g = (function(){
 	};
 	
 	// global 전체 정의
-	var g = {
+	var g = all.viewGlobal = {
 		obj : {
 			startPage : null,
 			mainSection : null,
@@ -163,7 +163,7 @@ var g = (function(){
 				isLoginPageSendServer : false,
 				isSignUpPage : false,
 				isSignUpPageSendServer : false,
-				fbSignInBtn : null,
+				//fbSignInBtn : null,
 				emailSignInBtn : null,
 				signUpBtn : null,
 				startPage : null,
@@ -181,7 +181,7 @@ var g = (function(){
 					_obj = this.obj;
 					
 				// obj 객체 초기화
-				_obj.fbSignInBtn = document.getElementById('fbSignIn');
+				//_obj.fbSignInBtn = document.getElementById('fbSignIn');
 				_obj.emailSignInBtn = document.getElementById('emailSignIn');
 				_obj.signUpBtn = document.getElementById('signUp');
 				_obj.startPage = document.getElementById('startPage');
@@ -191,11 +191,16 @@ var g = (function(){
 											
 				
 				// 초기 객체 바인딩
+				/*
 				L(_obj.fbSignInBtn).on('click', function(){
-					_this.loginSuc();
-					return g.mainControl.init();
+					if(_obj.isLoginPage){
+						return L(_obj.email_loginPage).addClass('on');
+					} else {
+						return _this.loginPage_email();	
+					};
 				});
-				L(_obj.emailSignInBtn).on('click', function(){	
+				*/
+				L(_obj.emailSignInBtn).on('click', function(){
 					if(_obj.isLoginPage){
 						return L(_obj.email_loginPage).addClass('on');
 					} else {
@@ -258,7 +263,7 @@ var g = (function(){
 				}, false);			
 				
 				L(_obj.email_signInForgotPwBtn).on('click', function(e){
-					alert('비밀번호 찾기 페이지는 준비중입니다.')
+					alert('비밀번호 찾기 페이지는 준비중입니다.');
 				});
 				
 				L(_obj.email_signInClose).on('click', function(e){
@@ -270,7 +275,9 @@ var g = (function(){
 			// 로그인 성공시 사용할 함수
 			loginSuc : function(){
 				var _this = this,
-					_obj = this.obj;		
+					_obj = this.obj;
+				
+				g.mainControl.init();
 			}
 		},
 		// 친구목록, 대화목록, 더보기 등 기본 정의.
@@ -299,7 +306,6 @@ var g = (function(){
 				L(_obj.startPage).removeClass('on');
 				L(_obj.friendsArea).addClass('on');
 				// 기본 이벤트 정의
-								
 				
 				// gnb 
 				this.gnbControl.init();
@@ -362,7 +368,7 @@ var g = (function(){
 				friendList : null
 			},
 			init : function(){
-				var _friends = this,
+				var _this = this,
 					_obj = this.obj,
 					_cg = cg;					
 				// obj 객체 초기화			
@@ -579,8 +585,20 @@ var cg = {
 			socket.emit('signIn_email', data);
 		},		
 		signInSucc : function(signInPage){
-			L(signInPage).removeClass('on')
-			alert('로그인 성공')
+			
+			
+			
+			// 친구 목록을 가져오고 대화 목록을 가져온다.
+			socket.emit('roomInit', 'data');		
+			
+			
+			
+			
+			// 로그인 팝업 지우기.
+			L(signInPage).removeClass('on');
+			
+			// 채팅방 화면 보여주기.
+			g.viewGlobal.startPage.loginSuc();
 		},
 		signInFail : function(signInPage){
 			console.log(signInPage)
@@ -603,7 +621,11 @@ var cg = {
 			socket.on('signUp_email_succ', function (data) {
 				console.log('회원가입 성공했당');
 				_this.signUpSucc(signUpPage);
-			}); 
+			});
+			socket.on('signUp_email_fail', function (data) {
+				console.log('회원가입 실패했당');
+				_this.signUpFail(signUpPage);
+			});
 		},
 		secondClick : function(e, formObj){
 			var data = {},
@@ -620,8 +642,11 @@ var cg = {
 			console.log(signUpPage)
 			L(signUpPage).removeClass('on');
 			alert('회원가입이 완료되었습니다.\n 로그인을 해주세요!');
-		}		
-		
+		},
+		signUpFail : function(signUpPage){
+			console.log(signUpPage)
+			alert('회원가입에 실패하였습니다.\n 이미 존재하거나, 잘못된 정보입니다. 확인해주세요!');
+		}
 	},
 	// Friends 페이지 정의
 	friendsPage : {
@@ -634,6 +659,9 @@ var cg = {
 			searchFriendArea : null,
 			searchFriendAreaClose : null,
 			friendList : null
+		},
+		viewMyFriends : function(){
+			
 		}
 	},
 	// 대화 목록 페이지 정의

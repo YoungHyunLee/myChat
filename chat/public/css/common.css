@@ -24,7 +24,7 @@ abbr[title],dfn[title]{/*border-bottom:1px dotted;*/cursor:help}
 
 /* global */
 html{font-size:16px;}
-#wrap{height:100%;background:url(../images/bg.jpg) no-repeat;background-size:cover;}
+#wrap{height:100%;background:url(../images/bg.jpg) no-repeat;background-size:cover;overflow:hidden;}
 .startPage{display:none;height:100%;position:relative;}
 .startPage.on{display:block;}
 .off, .mainWrap{display:none;}
@@ -60,7 +60,7 @@ html{font-size:16px;}
 .mainSignBtn .icon:after{content:"";display:block;position:absolute;top:50%;left:50%;-webkit-transform:translate(-50%, -50%);transform:translate(-50%, -50%);}
 .mainSignBtn.fb .icon:after{background-image:url(../images/mainSign_fbl.png);width:22px;height:44px;}
 .mainSignBtn.email .icon:after{background-image:url(../images/mainSign_email.png);width:36px;height:26px;}
-.mainSignBtn em{font-size:1.5rem;display:block;margin-left:100px;text-align:center;line-height:100px;}
+.mainSignBtn em{font-size:1.5rem;display:block;margin-left:100px;text-align:center;vertical-align:middle;}
 .mainSignBtn.fb em{color:#fff;}
 .mainSignBtn.email em{color:#383c3d;}
 
@@ -69,7 +69,7 @@ html{font-size:16px;}
 .helpBtn{position:absolute;bottom:15px;right:15px;border:2px solid #fff;border-radius:20px;width:40px;height:40px;font-size:1.5rem;color:#fff;}
 
 /* 팝업 공통 */
-.layerPop{position:absolute;top:0;left:0;right:0;bottom:0;z-index:1000;visibility:hidden;opacity:0;-webkit-transition:all .3s;transition:all .3s;}
+.layerPop{position:absolute;top:0;left:0;right:0;bottom:0;z-index:1000;visibility:hidden;opacity:0;-webkit-transition:opacity .3s;transition:opacity .3s;}
 .layerPop.on{visibility:visible;opacity:1;}
 .popShadow{position:absolute;top:0;left:0;right:0;bottom:0;background-color:rgba(0,0,0,.5);}
 .popContainer{position:absolute;top:50%;left:50%;-webkit-transform:translate(-50%, -50%);transform:translate(-50%, -50%);width:500px;}
