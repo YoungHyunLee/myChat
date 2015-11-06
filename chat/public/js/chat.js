@@ -133,6 +133,7 @@ var g = (function(){
 	var g = all.viewGlobal = {
 		obj : {
 			startPage : null,
+			loadingBar : null,
 			mainSection : null,
 			friendsArea : null,
 			talkListArea : null,
@@ -145,6 +146,7 @@ var g = (function(){
 		init : function(){
 			var _obj = this.obj;			
 			_obj.startPage = document.getElementById('startPage');
+			_obj.loadingBar = document.getElementById('loadingBar');
 			_obj.mainSection = document.getElementById('mainSection');
 			_obj.friendsArea = document.getElementById('friendsArea');
 			_obj.talkListArea = document.getElementById('talkListArea');
@@ -188,7 +190,7 @@ var g = (function(){
 				_obj.friendsWrap = document.getElementById('friendsArea');		
 				_obj.helpBtn = document.getElementById('help');	
 				_obj.email_signUpPage = document.getElementById('email_signUpPage');
-											
+							
 				
 				// 초기 객체 바인딩
 				/*
@@ -253,7 +255,8 @@ var g = (function(){
 				
 				// 이벤트 바인딩.				
 				L(_obj.email_signInSubmitBtn).on('click', function(e){
-					e.preventDefault();
+					e.preventDefault();		
+					L(g.obj.loadingBar).addClass('on');
 					if(_obj.isLoginPageSendServer){						
 						return _cg.signInPage.secondClick(e, _obj.email_signInForm);
 					} else {
@@ -537,10 +540,6 @@ var cg = {
 		// 초기화
 		
 		var _this = this;
-		socket.on('joinRoomEnd', function (data) {
-			console.log('f룸 가입했당!' + data)
-			
-		});
 		// 누군가가 글을 보낸 후 내 화면에 그릴 때.
 		socket.on('sendMsgOtherPeople', function (data) {
 			var _tPage = _this.talkPage;
@@ -564,9 +563,9 @@ var cg = {
 			// 서버로 signInSubmitBtn 클릭했을 때 입력정보를 서버로 넘김.	
 			socket.emit('signIn_email', data);
 			
-			socket.on('signIn_email_succ', function (data) {
-				console.log('로그인 성공했당');
-				_this.signInSucc(signInPage);
+			socket.on('signInEnd', function (data) {
+				console.log('로그인 성공했당 data는 :', data);
+				_this.signInSucc(signInPage, data);
 			}); 			
 			socket.on('signIn_email_fail', function (data) {
 				console.log('로그인 실패했당');
@@ -584,13 +583,14 @@ var cg = {
 			
 			socket.emit('signIn_email', data);
 		},		
-		signInSucc : function(signInPage){
+		signInSucc : function(signInPage, data){
 			
 			
 			
-			// 친구 목록을 가져오고 대화 목록을 가져온다.
-			socket.emit('roomInit', 'data');		
-			
+			// 친구 목록 그리기.
+			this.paintMyFriends(data);
+			// 채팅 목록 그리기
+			this.paintMyTalkList(data);
 			
 			
 			
@@ -599,11 +599,43 @@ var cg = {
 			
 			// 채팅방 화면 보여주기.
 			g.viewGlobal.startPage.loginSuc();
+			
+			// 로딩 지우기.
+			L(g.viewGlobal.obj.loadingBar).removeClass('on');
 		},
 		signInFail : function(signInPage){
 			console.log(signInPage)
+			// 로딩 지우기.
+			L(g.viewGlobal.obj.loadingBar).removeClass('on');
+			
 			alert('아이디와 비밀번호를 다시 확인해주세요.')
-		}			
+		},
+		paintMyFriends : function(data){			
+			console.log('친구 목록을 그립니당.');
+			console.log(data)
+			
+			var friendOl = g.viewGlobal.obj.friendsArea.children[0];
+			//친구 목록 그리기.
+			for(var i = 0, list = data.friendData, len = list.length, friendElement ; i < len ; i +=1){
+				friendElement = 
+						'<li class="friendList">' +
+							'<a href="#">' +
+								'<div class="friendImg">' +
+									'<img src="../uploads/userUploadPicture/' + list[i].myProfilePic +'">' +	
+								'</div>' +
+								'<div class="friendText">' +
+									'<em class="name">' + list[i]._myId + '</em>' +
+									'<span class="statusMsg">' + list[i].profileMsg+ '</span>' +
+								'</div>' +
+							'</a>' +
+						'</li>';
+				L(friendOl).append(friendElement);
+			};
+			
+		},
+		paintMyTalkList : function(data){
+			console.log('paintMyTalkList');
+		}
 	},
 	// 회원가입-email 페이지 정의
 	signUpPage : {

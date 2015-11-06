@@ -34,6 +34,13 @@ html{font-size:16px;}
 .headArea{position:absolute;top:0;left:0;right:0;height:61px;box-sizing:border-box;border-bottom:1px solid #cecece;}
 .gnbArea{position:absolute;bottom:0;left:0;right:0;height:41px;}
 
+.loadingBar{display:none;position:absolute;top:0;left:0;right:0;bottom:0;z-index:1100;}
+.loadingBar.on{display:block;}
+.loadingBar .shadow{position:absolute;top:0;left:0;right:0;bottom:0;background-color:rgba(0,0,0,.5);}
+.loadingBar .loadImgArea{display:inline-block;position:absolute;top:50%;left:50%;-webkit-transform:translate(-50%, -50%);transform:translate(-50%, -50%);}
+.loadingBar .loadImgArea img{max-width:80%;}
+
+
 /* 공통 정의 */
 .ctmTextField{box-sizing:border-box;padding:3px 5px;border:1px solid #ccc;border-radius:3px;box-shadow:inset 0 1px 2px #aaa;}
 .ctmTextField:focus{border-color:#51a7e8;box-shadow:inset 0 1px 2px rgba(0,0,0,0.075),0 0 5px rgba(81,167,232,0.5);}
@@ -165,7 +172,7 @@ html{font-size:16px;}
 .friendText .talkMsg{display:block;color:#333;font-size:0.875rem;line-height:1.3;max-height:2.3rem;overflow:hidden;}
 
 /* 대화창 */
-.waitArea.talkArea{top:61px;background-color:#8685CE;position:absolute;left:0;right:0;bottom:0;z-index:1000;}
+.waitArea.talkArea{top:61px;background-color:#8685CE;position:absolute;left:0;right:0;bottom:0;z-index:50;}
 .talkArea>.scrollArea{bottom:30px;}
 .talkListArea .talkList{position:relative;}
 .talkListArea .talkList a{display:block;}

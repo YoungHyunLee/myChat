@@ -1,22 +1,40 @@
 'use strict';
 /*
+	
+	signUpEmailModel = null, // 회원가입시 저장하는 model
+	talkMegModel = null, // 채팅방에서 서로 대화한 것을 저장하는 model
+	userInfoModel = null // 개인 정보 model
+	
 	회원가입 페이지	 
 	signUp email에서 저장버튼을 누른 후, 데이터를 받음.
  */
 exports.signUpEmail = function(data, socket){
 	// data는 username, email, password
 	console.log('회원가입 버튼을 클릭했당!! data는 ', data);		
-	// 여기에 지금 맞게 들어갔는지 체크는 하나도 없음. validation은 추후에 추가.
-	var signUpEmailSchema = new signUpEmailModel({
-		username : data.username,
-		email : data.email,
-		password : data.password
-	});
+	
 	signUpEmailModel.find({email : data.email}, function(err, isAlreadySignUp){
 		switch(isAlreadySignUp.length){
 			case 0 : 				
 				console.log('없으므로 저장합니다.');
+				// 여기에 지금 맞게 들어갔는지 체크는 하나도 없음. validation은 추후에 추가.
+				// 회원가입-email & 개인정보 저장
+				var signUpEmailSchema = new signUpEmailModel({
+					username : data.username,
+					email : data.email,
+					password : data.password
+				});
+				var userInfoSchema = new userInfoModel({
+					_myId : data.username,
+					username : data.username,	
+					email : data.email,	
+					myProfileMsg : null,
+					myProfilePic : 'person.jpg',
+					friendsList : []
+				});				
+				
 				signUpEmailSchema.save();
+				userInfoSchema.save();
+				
 				return socket.emit('signUp_email_succ');
 			case 1 :
 				console.log('이미 존재하네요. 저장 안 함ㅋ')
@@ -45,27 +63,153 @@ exports.loginCheck = function(data, socket){
 				return socket.emit('signIn_email_fail');
 			case 1 :
 				// 성공했을 때 넘김.
-				console.log('성공')
-				
-				// 대화방에 해당하는 모델을 읽음.
-				talkMegModel.find({username : data.username}, function(err, users){
-					if (err){ return console.error(err);}
-					console.log(users)
-				});
-								
-				//socket.join(roomId);
-				//console.log('현재 가입된 소켓 목록 리턴', io.sockets.manager.rooms, data.name)
-				socket.emit('joinRoomEnd', '가입했당');
-									
-				return socket.emit('signIn_email_succ');
+				console.log('성공');				
+				// 개인의 룸 초기화.
+				return exports.roomInit(data, socket)				
 		};			
-	});					
+	});
 };
 
+exports.roomInit = function(data, socket){
+	/*
+	signUpEmailModel = null, // 회원가입시 저장하는 model
+	talkMegModel = null, // 채팅방에서 서로 대화한 것을 저장하는 model
+	userInfoModel = null // 개인 정보 model
+	var userInfoSchema = new userInfoModel({
+		_myId : data.username,
+		username : data.username,	
+		email : data.email,	
+		myProfileMsg : null,
+		myProfilePic : 'person.jpg',
+		friendsList : []
+	});	
+	var signUpEmailSchema = new Schema({
+		username : String,
+		email : String,
+		password : String,
+		friends : Object,
+		talkList : Object		
+	});
+	var talkMegSchema = new Schema({
+		roomname : String,
+		users : Array,
+		Content : [
+			{
+				_id : 0,
+				idx : Number,
+				date : String,
+				talkCnt : String
+			}
+		],
+		lastIndex : Object // 객체의 프로퍼티로 id, 값에 마지막에 본 숫자.
+	});
+	*/
+	
+	// 데이터를 저장할 객체.
+	var allData = {
+		data : null, // 로그인한 사람의 username
+		friendData : null, // 친구 목록
+		talkMegData : [] // 대화 목록
+	};
+	// 개인정보에 해당하는 모델을 읽음. 친구목록 뿌리기.
+	userInfoModel.findOne({email : data.email}, function(err, users){
+		if (err){ return console.error(err);}
+		var data = {};
+		
+		// 개인 유저의 친구들의 정보 & 나의 정보를 data 객체에 저장.
+		data.username = users.username;		
+		data.myProfilePic = users.myProfilePic;
+		data.myProfileMsg = users.myProfileMsg;
+		
+		allData.data = data;
+		allData.friendData = users.friendsList;
+		// 만든 데이터 저장.
+		return findTalkModelFunc();
+	});
+	
+	// 대화방에 해당하는 모델을 읽음.
+	function findTalkModelFunc(){
+		var talkMegSearchQuery = allData.data.username,
+			roomData = [];
+			
+		talkMegModel.find({users : talkMegSearchQuery}, function(err, findTalkRoom){
+			if (err){return console.error(err);}
+			for(var i = 0, list = findTalkRoom, len = list.length ; i < len ; i +=1){
+				roomData[i] = {};
+				roomData[i].roomname = list[i].roomname;
+				roomData[i].users = list[i].users
+				roomData[i].Content = list[i].Content[list[i].Content.length-1];
+				allData.talkMegData[i] = roomData;
+			};
+			return socket.emit('signInEnd', allData);
+		});
+	};
+};
+
+
+
+exports.roomCreate = function(){
+	
+	var talkMegSchema = new talkMegModel({
+		roomname : String,
+		users : Array,
+		Content : [
+			{
+				_id : 0,
+				idx : Number,
+				date : String,
+				talkCnt : String
+			}
+		],
+		lastIndex : Object // 객체의 프로퍼티로 id, 값에 마지막에 본 숫자.
+	});
+	talkMegSchema.save();
+}
 
 // 누군가가 메시지를 보냈을 때 사용.
 exports.sendMsgRoom = function(data, socket){
 	console.log('서버에서 메시지 받았당')
 	socket.broadcast.to(roomId).emit('sendMsgOtherPeople', data);
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

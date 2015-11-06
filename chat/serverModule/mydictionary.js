@@ -231,7 +231,8 @@ User.find ( function (err, users) {
 User.findOne({ name: 'ward' }, function(err, scott) {
   if (err) { return console.error(err); }
   console.log(scott);
-}); */
+}); 
+*/
 
 /*
 // Update 1
