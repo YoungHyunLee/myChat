@@ -1,0 +1,111 @@
+w<!DOCTYPE HTML>
+<html lang ="ko">      // 언어는 한글로 설정
+  <head>
+<meta charset ="utf-8"> // 이부분이 있어야 한글이 나옵니다.
+ 
+<title>어린 딸을 위한 웹페이지</title> //웹페이지 타이틀 문장
+   <style>
+      body {
+        margin: 0px;             //웹페이지 여백이 없게 하는 것
+        padding: 0px;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="myCanvas" width="500" height="500">
+이 글이 보이면 브라우저가 지원하지 않는 것입니다. 크롬으로 하세요.
+</canvas> 
+ 
+ 
+    <script>
+      var canvas = document.getElementById('myCanvas');
+      var c = canvas.getContext('2d'),            // 변수 c 선언  var를 두번 안쓰기 위해서 끝에 ,를 사용하였음
+   two_pi=Math.PI *2;                             //원을 만들때 사용하는 공식을 변수로 만듬
+                 
+    c.fillStyle = "black";                             //전체 캔버스를 검정으로 만듬 백그라운드 블랙으로 만들어도 됨
+c.fillRect(0,0,canvas.width,canvas.height); //canvas.style.background = "black"; 이것도 같은 결과 
+      
+      
+      c.rect(20,20,50,50);                     //시작 x20  y20  넓이50  높이 50 인 사각형
+      c.fillStyle = 'red';                          //색깔은 빨강색으로 채움
+      c.fill();
+ 
+      c.lineWidth = 10;                       //10의 하얀색 선을 테두리로 만듬
+      c.strokeStyle = 'white';       
+      c.stroke();  
+ 
+      c.strokeStyle = "#7e9fc2";            //#7e9fc2 의 색깔로 만들어진 선
+      c.lineWidth = 20;                        // 크기는  20
+ 
+      c.beginPath();                           //선의 경로 시작
+      c.moveTo(100,100);                 //시작 xy좌표가 100 100
+      c.lineTo(150,200);      
+      c.lineTo(200,200);
+      c.lineTo(200,250);
+      c.lineTo(100,250);                   //각각 마지막 좌표를 이어줌
+      c.closePath();                          //마지막 선의 끝과 처음 시작을 이어줌
+      c.stroke();
+      c.fill();
+ 
+ c.fillStyle ="white";                      
+ c.font ="50px Helvetica";
+ c.fillText("Hello 안녕",230,200);        //Hello 안녕 을 좌표 230 200 에 50픽셀로 흰색으로 적는다.
+ 
+ c.beginPath();
+ c.arc(200, 340, 50, 0, two_pi, false);  //xy축 200 300 반지름 50 의 원을 그린다.
+ c.fill();
+ 
+ var posx = 0,
+     posy = 200;
+ 
+ setInterval(function(){                 //0.05마다 계속 실행하다
+
+ posx += 4;                              //0.05초 마다 4씩 증가
+
+ if (posx>200){                         // 변수 posx가 200 보다 작을때에는
+  posy +=3;                      // posy 를 3씩 증가
+  //posx=200;
+}
+
+
+c.fillStyle ="rgba(0,0,0,0.03)";       // 검정색으로.. 투명은 0.3      
+c.fillRect(0,0, canvas.width, canvas.height); //xy축은 0 으로 높이과 넓이는 켄버스 크기
+
+
+ c.fillStyle ="white";                   //색깔은 화이트
+ c.beginPath();                          // 경로 시작
+ c.arc(posx, posy, 50, 0, two_pi, false); //xy축이 0과 200 으로 시작하는 반지름 50의 원  0.05초 마다 축은 4씩 계속 증가하고 y축은 처음에 200에서 posx가 200보다 크면 3씩 증가 
+ c.fill();
+
+},50);   //50이면 0.05 이고 1000이면 1초이다.
+                   
+    </script>
+  </body>
+</html>
+
+
+<!--<!DOCTYPE html>
+<html>
+<head></head>
+<body>
+
+<div class="canvas_wrap1">	
+	<canvas id="myCanvas1" width="300" height="150" style="border:1px solid #d3d3d3;">
+	Your browser does not support the HTML5 canvas tag.</canvas>
+</div>
+
+<script>
+
+var c=document.getElementById("myCanvas1");
+var ctx=c.getContext("2d");
+var grd=ctx.createRadialGradient(75,50,15,165,120,100);
+grd.addColorStop(0,"red");
+grd.addColorStop(1,"white");
+ctx.fillStyle=grd;
+ctx.fillRect(0,0,300,150);
+
+</script>
+
+</body>
+</html>
+-->

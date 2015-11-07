@@ -1,0 +1,26 @@
+{
+  "name": "mean_test",
+  "version": "0.0.1",
+  "dependencies": {
+    "express": "4.x",
+    "socket.io": "0.9.x"
+  },
+  "engines": {
+    "node": "4.2.x",
+    "npm": "1.2.x"
+  },
+  "description": "my first mean test",
+  "main": "web.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "mongodb",
+    "express",
+    "angular.js",
+    "node.js"
+  ],
+  "author": "yhlee",
+  "license": "MIT"
+}
