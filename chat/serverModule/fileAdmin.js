@@ -2,12 +2,12 @@
 'use strict';
 var fs = require('fs')
   ,	multer = require('multer')
-  , upload = multer({ dest : './uploads/'});
+  , upload = multer({ dest : './public/uploads/'});
   
 // 파일 업로드
 exports.uploadFile = function(req, res, next){	
 	fs.readFile(req.file.path, function(error,data){
-        var destination = __dirname + '\\..\\uploads\\'+ req.file.originalname;
+        var destination = __dirname + '\\\\userUploadPicture\\'+ req.file.originalname;
         fs.writeFile(destination,data,function(error){
             if(error){
                 console.log(error);

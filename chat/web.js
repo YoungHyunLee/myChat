@@ -72,7 +72,7 @@ db.once('open', function(){
 	var TalkMeg = mongoose.model('talkMegs', talkMegSchema);
 	global.talkMegModel = talkMegModel = TalkMeg;
 	
-	
+	/*
 	var UserInfo1 = new UserInfo({
 		"_myId": "숫자놀이",
 	    "email": "numbernori@gmail.com",
@@ -95,7 +95,7 @@ db.once('open', function(){
 	    ]
 	});
 	UserInfo1.save();
-	/*
+	
 	var talkMegSchema = new talkMegModel({
 		roomname : '숫자놀이_0',
 		users : [
