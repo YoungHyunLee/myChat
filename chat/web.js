@@ -176,7 +176,7 @@ io.sockets.on('connection', function(socket){
 	
 	// 초기 설정.	
 	socket.on('init', function (data) {
-		
+		socket.rooms = [];
     });	
 	/*
 		회원가입 페이지	 
@@ -201,6 +201,11 @@ io.sockets.on('connection', function(socket){
 			
 	// 접속이 종료되면 trigger
   	socket.on('disconnect', function () {
+  		for(var i = 0, list = socket.rooms, len = list.length; i < len ; i +=1){
+  			socket.leave(list[i]);
+  			console.log("접종!! ", socket.rooms)
+  		}
+  		
   		io.sockets.emit('user disconnected');
   		/*
 	  	그냥 대충 roomid 만들었던 때에 사용했음.	

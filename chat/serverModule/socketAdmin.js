@@ -10,7 +10,7 @@
  */
 exports.signUpEmail = function(data, socket){
 	// data는 username, email, password
-	console.log('회원가입 버튼을 클릭했당!! data는 ', data);		
+	console.log('회원가입 버튼을 클릭했당!!');		
 	
 	signUpEmailModel.find({email : data.email}, function(err, isAlreadySignUp){
 		switch(isAlreadySignUp.length){
@@ -50,7 +50,7 @@ exports.signUpEmail = function(data, socket){
 */
 exports.loginCheck = function(data, socket){
 	// data는 username, email, password
-	console.log('로그인 버튼을 클릭했당!! data는 ', data);
+	console.log('로그인 버튼을 클릭했당!!');
 	
 	// 여기에 지금 맞게 들어갔는지 체크는 하나도 없음. validation은 추후에 추가.
 	// 이메일과 pw가 맞으면 로그인 시킴.
@@ -123,6 +123,7 @@ exports.roomInit = function(data, socket){
 		
 		allData.data = data;
 		allData.friendData = users.friendsList;
+				console.log("난 트리거된다")
 		// 만든 데이터 저장.
 		return findTalkModelFunc();
 	});
@@ -134,18 +135,28 @@ exports.roomInit = function(data, socket){
 			
 		talkMegModel.find({users : talkMegSearchQuery}, function(err, findTalkRoom){
 			if (err){return console.error(err);}
+			socket.rooms = [];
+			
 			for(var i = 0, list = findTalkRoom, len = list.length ; i < len ; i +=1){
 				roomData[i] = {};
 				roomData[i].roomname = list[i].roomname;
 				roomData[i].users = list[i].users
-				roomData[i].Content = list[i].Content[list[i].Content.length-1];
-				allData.talkMegData[i] = roomData;
+				roomData[i].Content = list[i].Content;
+				allData.talkMegData[i] = roomData[i];
+				//socket.join(list[i].roomname)
+				//console.log("ididiid", socket.id)
+				socket.join(list[i].roomname);
+				socket.rooms.push(list[i].roomname);
 			};
 			return socket.emit('signInEnd', allData);
 		});
 	};
 };
 
+// 룸 가입하기.
+exports.joinRoom = function(){
+	
+};
 
 
 exports.roomCreate = function(){
@@ -168,7 +179,7 @@ exports.roomCreate = function(){
 
 // 누군가가 메시지를 보냈을 때 사용.
 exports.sendMsgRoom = function(data, socket){
-	console.log('서버에서 메시지 받았당')
+	console.log("서버에서 메시지 받았당 roomId는 ")
 	socket.broadcast.to(roomId).emit('sendMsgOtherPeople', data);
 };
 

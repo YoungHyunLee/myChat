@@ -4,6 +4,8 @@
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no,minimum-scale=1.0,maximum-scale=1,0" />
 <title>Number's chat</title>
+<link href="./bootstrap/dist/css/bootstrap.css" rel="stylesheet" type="text/css" />
+<link href="./bootstrap/dist/css/bootstrap-theme.css" rel="stylesheet" type="text/css" />
 <link href="./css/common.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
@@ -126,12 +128,14 @@
 	
 	<!-- 기본 컨텐츠 페이지 -->
 	<main id='mainSection' class="mainWrap">
-		<header class="headArea">
+		<header id="headArea" class="headArea">
 			<nav class="lnbBar">
-				<button type=button class='topMenuBtn' title='메뉴보기'>
+				<button id='lnbTopMenuBtn' type=button class='topMenuBtn utilMenu on' title='메뉴보기'>
 					<span class="icon"></span>
 				</button>
-				
+				<button id='lnbTopTalkPrevBtn' type=button class='topMenuBtn prev' title='이전으로 가기'>
+					<span class="glyphicon glyphicon-menu-left"></span>
+				</button>
 				<!-- 왼쪽 메뉴용
 				<ul>
 					<li>
@@ -336,6 +340,7 @@
 <script src="./js/chat.js"></script>
 <!--
 <script src="./js/jquery.min.js"></script>
+<script src="./bootstrap/dist/js/bootstrap.min.js"></script>
 <script>
   (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
   (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),

@@ -135,6 +135,7 @@ var g = (function(){
 			startPage : null,
 			loadingBar : null,
 			mainSection : null,
+			headArea : null,
 			friendsArea : null,
 			talkListArea : null,
 			talkArea : null,
@@ -148,6 +149,7 @@ var g = (function(){
 			_obj.startPage = document.getElementById('startPage');
 			_obj.loadingBar = document.getElementById('loadingBar');
 			_obj.mainSection = document.getElementById('mainSection');
+			_obj.headArea = document.getElementById('headArea');			
 			_obj.friendsArea = document.getElementById('friendsArea');
 			_obj.talkListArea = document.getElementById('talkListArea');
 			_obj.talkArea = document.getElementById('talkArea');
@@ -318,6 +320,10 @@ var g = (function(){
 			gnbControl : {
 				obj : {				
 					mainSection : null,
+					headArea : null,
+					lnbTopMenuBtn : null,
+					lnbTopTalkPrevBtn : null,
+					lnbHeadText : null,
 					friendsArea : null,
 					talkArea : null,
 					talkListArea : null,
@@ -333,6 +339,10 @@ var g = (function(){
 					for(var i in _obj){
 						g.obj[i] !== undefined ? _obj[i] = g.obj[i] : true;
 					};
+					_obj.lnbTopMenuBtn = document.getElementById('lnbTopMenuBtn');
+					_obj.lnbTopTalkPrevBtn = document.getElementById('lnbTopTalkPrevBtn');
+					_obj.lnbHeadText = _obj.headArea.getElementsByClassName('lnbHeadText')[0].children[0];
+					
 										
 					// 이벤트 바인딩 - gnb 
 					for(var i = 0, list = _obj.gnbAreaList, len = list.length ; i < len ; i +=1){
@@ -346,17 +356,31 @@ var g = (function(){
 							};
 							
 							if(L(this).hasClass('friends')){
+								L(_obj.lnbHeadText).textContent = "Friends";
 								L(_obj.friendsArea).addClass('on');
+								
 								g.friendsPage.view();
-							} else if(L(this).hasClass('talkListArea')){	
+							} else if(L(this).hasClass('talkListArea')){
+								L(_obj.lnbHeadText).textContent = "Chating";	
 								L(_obj.talkListArea).addClass('on');
+								
 								g.talkListAreaPage.view();
-							} else if(L(this).hasClass('more')){	
+							} else if(L(this).hasClass('more')){
+								L(_obj.lnbHeadText).textContent = "More";
 								alert('더보기 준비중입니다.')
 							};
 							
 						}, false)
 					}
+					
+					// 이벤트 바인딩 - lnb
+					L(_obj.lnbTopTalkPrevBtn).on('click', function(){
+						L(_obj.lnbHeadText).textContent = "Chating";	
+						L(_obj.lnbTopTalkPrevBtn).removeClass('on');
+						L(_obj.lnbTopMenuBtn).addClass('on');
+						
+						g.talkPage.prevTalkPage();
+					})
 					
 					//gnbAreaList
 				}
@@ -432,13 +456,11 @@ var g = (function(){
 						e.preventDefault();
 						// 대화방으로 이동
 						g.talkPage.view();
-					}, false)
+					});
 				};				
-					
-				
+								
 			},
-			view : function(e){
-				
+			view : function(e){				
 				if(this.obj.isView === false) this.init();
 				
 				
@@ -460,7 +482,7 @@ var g = (function(){
 				talkListArea : null,
 				talkArea : null,
 				talkScrollArea : null,				
-				
+				headArea : null,
 				// 메시지 전송영역
 				sendMsgForm : null,
 				textInput : null,
@@ -496,11 +518,28 @@ var g = (function(){
 				}, false);
 				
 			},
-			view : function(){
+			// 각 사람들의 대화 목록 페이지 호출.
+			view : function(){				
 				var _obj = this.obj;
 				if(_obj.isView === false) this.init();
 				
+				var leftOnBtn = _obj.headArea.getElementsByClassName('topMenuBtn on')[0];
+				var leftPrevBtn = _obj.headArea.getElementsByClassName('topMenuBtn prev')[0];
+				var headText =  _obj.headArea.querySelector('.lnbHeadText a');
+				
+				L(leftOnBtn).removeClass('on');
+				L(leftPrevBtn).addClass('on');
+				headText.textContent = "대화중";
+				
+				// 대화창 보여주기.
 				L(_obj.talkArea).addClass('on');
+				
+				
+				
+			},
+			prevTalkPage : function(){
+				var _obj = this.obj;
+				L(_obj.talkArea).removeClass('on');
 			}
 		}
 		
@@ -597,7 +636,7 @@ var cg = {
 			// 로그인 팝업 지우기.
 			L(signInPage).removeClass('on');
 			
-			// 채팅방 화면 보여주기.
+			// 친구목록 화면 보여주기.
 			g.viewGlobal.startPage.loginSuc();
 			
 			// 로딩 지우기.
@@ -609,7 +648,7 @@ var cg = {
 			L(g.viewGlobal.obj.loadingBar).removeClass('on');
 			
 			alert('아이디와 비밀번호를 다시 확인해주세요.')
-		},
+		},		
 		paintMyFriends : function(data){			
 			console.log('친구 목록을 그립니당.');
 			console.log(data)
@@ -617,24 +656,93 @@ var cg = {
 			var friendOl = g.viewGlobal.obj.friendsArea.children[0];
 			//친구 목록 그리기.
 			for(var i = 0, list = data.friendData, len = list.length, friendElement ; i < len ; i +=1){
-				friendElement = 
-						'<li class="friendList">' +
-							'<a href="#">' +
-								'<div class="friendImg">' +
-									'<img src="../uploads/userUploadPicture/' + list[i].myProfilePic +'">' +	
-								'</div>' +
-								'<div class="friendText">' +
-									'<em class="name">' + list[i]._myId + '</em>' +
-									'<span class="statusMsg">' + list[i].profileMsg+ '</span>' +
-								'</div>' +
-							'</a>' +
-						'</li>';
-				L(friendOl).append(friendElement);
+				L(friendOl).append(this.friendsTemp(list[i].myProfilePic, list[i]._myId, list[i].profileMsg));
 			};
 			
 		},
+		
+		// 채팅 목록 뿌리기.
 		paintMyTalkList : function(data){
-			console.log('paintMyTalkList');
+			console.log('paintMyTalkList', data);
+			var talkListOl = g.viewGlobal.obj.talkListArea.children[0];
+			var frag = document.createDocumentFragment();
+			var div = document.createElement('div')
+			
+			for(var i = 0, list = data.talkMegData, len = list.length, content, ol, talkElement ; i < len ; i +=1){
+				content = list[i].Content;
+				talkElement = this.TalkListTemp(undefined, list[i].users, content[content.length-1].date, content[content.length-1].talkCnt);
+				div.innerHTML = talkElement;
+				div.lastChild._roomname = list[i].roomname;
+				frag.appendChild(div.lastChild);
+				console.dir(frag);
+			};
+			talkListOl.appendChild(frag);
+			
+			/*
+			a = u.createDocumentFragment();
+			d = u.createElement("div");
+			d.innerHTML = "<input type='radio' name='radiotest' checked='checked'/>";
+			a.appendChild(d.firstChild);
+			*/
+		},
+		
+		
+		// 친구 목록 템플릿.
+		friendsTemp : function(picUrl, myId, profileMsg){
+			if(picUrl === undefined) picUrl = 'default.jpg';
+			var temp = 
+				'<li class="friendList">' +
+					'<a href="#">' +
+						'<div class="friendImg">' +
+							'<img src="../uploads/userUploadPicture/' + picUrl +'">' +	
+						'</div>' +
+						'<div class="friendText">' +
+							'<em class="name">' + myId + '</em>' +
+							'<span class="statusMsg">' + profileMsg + '</span>' +
+						'</div>' +
+					'</a>' +
+				'</li>';
+			return temp;
+		},
+		// 채팅 목록 템플릿.
+		TalkListTemp : function(picUrl, myId, date, lastMsg){
+			if(picUrl === undefined) picUrl = 'default.jpg';
+			var users = '';
+			for(var i = 0, len = myId.length ; i < len ; i +=1){
+				users += myId[i] + ', ' 
+			};
+			users = users.slice(0, -2);			
+			var temp = 
+				 '<li class="friendList">' +
+					'<a href="#" class="area_talkListLink">' +
+						'<div class="friendImg">' +
+							'<img src="../uploads/userUploadPicture/' + picUrl + '">' +
+						'</div>' +
+						'<div class="friendText">' +
+							'<em class="names">' + myId + '</em>' +
+							'<span class="lastMsgDate">' + date + '</span>' +
+							'<span class="talkMsg">' + lastMsg + '</span>' +
+						'</div>' +
+					'</a>' +
+				'</li>'; 
+				/*
+				 
+				 '<li class="friendList">' +
+					'<a href="#" class="area_talkListLink">' +
+						'<div class="friendImg">' +
+							'<img src="../uploads/userUploadPicture/' + picUrl + '">' +
+						'</div>' +
+						'<div class="friendText">' +
+							'<em class="names">' + myId + '</em>' +
+							'<span class="lastMsgDate">' + date + '</span>' +
+							'<span class="talkMsg">' + lastMsg + '</span>' +
+						'</div>' +
+					'</a>' +
+				'</li>'; 
+				  
+				 */			
+				
+			return temp;
 		}
 	},
 	// 회원가입-email 페이지 정의

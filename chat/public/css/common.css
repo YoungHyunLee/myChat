@@ -125,11 +125,13 @@ html{font-size:16px;}
 
 /* lnb(header) */
 .lnbBar{height:100%;background-color:#fff;position:relative;z-index:99;}
-.lnbBar .topMenuBtn, .lnbBar .searchFireBtn{position:absolute;top:0;height:100%;width:60px;}
-.lnbBar .topMenuBtn{left:0;}
+.lnbBar .topMenuBtn, .lnbBar .searchFireBtn{position:absolute;top:0;height:100%;width:60px;display:none;}
+.lnbBar .topMenuBtn.on{display:inline-block;left:0;}
 .lnbBar .searchFireBtn{right:0;}
 .topMenuBtn .icon, .searchFireBtn .icon{display:block;position:absolute;top:50%;left:50%;-webkit-transform:translate(-50%, -50%);transform:translate(-50%, -50%);}
-.topMenuBtn .icon{background:url(../images/nav_menu.png) no-repeat;width:38px;height:36px;}
+.topMenuBtn.utilMenu .icon{background:url(../images/nav_menu.png) no-repeat;width:38px;height:36px;}
+.topMenuBtn.prev .icon{background:url(../images/nav_menu.png) no-repeat;width:38px;height:36px;}
+ 
 .searchFireBtn .icon{float:right;background:url(../images/nav_search.png) no-repeat;width:32px;height:32px;}
 .lnbHead{position:absolute;top:50%;left:50%;-webkit-transform:translate(-50%, -50%);transform:translate(-50%, -50%);}
 .lnbHead .lnbHeadText a{color:#36afe6;font-size:2rem;display:inline-block;}
