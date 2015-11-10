@@ -3,6 +3,21 @@
 
 /*
  * 
+ * 아래는 JS의 기본 관련 스크립트.
+ * 
+ */
+
+
+/*
+documentFragment 사용법
+a = u.createDocumentFragment();
+d = u.createElement("div");
+d.innerHTML = "<input type='radio' name='radiotest' checked='checked'/>";
+a.appendChild(d.firstChild);
+*/
+
+/*
+ * 
  * 아래는 node의 기본 관련 스크립트.
  * 
  */

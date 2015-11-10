@@ -193,6 +193,11 @@ io.sockets.on('connection', function(socket){
 	socket.on('signIn_email', function(data){
 		socketAdmin.loginCheck(data, socket)
 	});
+	
+	// 대화 목록을 클릭했을 때 대화 내용 검색.
+	socket.on('talkRoomContentSearch', function(data){
+		socketAdmin.searchContent(data, socket)
+	});
 		
 	// 누군가가 메시지를 보냈을 때 사용.(룸 전용)
 	socket.on('sendMsg', function(data){

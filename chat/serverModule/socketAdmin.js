@@ -117,13 +117,14 @@ exports.roomInit = function(data, socket){
 		var data = {};
 		
 		// 개인 유저의 친구들의 정보 & 나의 정보를 data 객체에 저장.
-		data.username = users.username;		
+		data._myId = users._myId;
+		data.username = users.username;
 		data.myProfilePic = users.myProfilePic;
 		data.myProfileMsg = users.myProfileMsg;
 		
 		allData.data = data;
 		allData.friendData = users.friendsList;
-				console.log("난 트리거된다")
+		
 		// 만든 데이터 저장.
 		return findTalkModelFunc();
 	});
@@ -175,7 +176,60 @@ exports.roomCreate = function(){
 		lastIndex : Object // 객체의 프로퍼티로 id, 값에 마지막에 본 숫자.
 	});
 	talkMegSchema.save();
-}
+};
+
+// 대화 목록을 클릭했을 때 대화 내용 검색.
+exports.searchContent = function(data, socket){
+	console.log("서버에서 Content 검색 요청을 받았당");
+	
+	var totalInd = 0,
+		inter = {
+			timeout : null,
+			interVal : null,
+			allValue : 0 
+		},
+		allData = {
+			content : null,
+			friendsData : []
+		};
+	var roomName = data.roomname;
+	inter.timeout = function(){
+		if(inter.allValue === totalInd -1){
+			// 조회가 끝났으니 데이터를 client로 보냄.
+			socket.emit('talkRoomCreateData', allData);
+		};
+	};
+	
+	talkMegModel.find({roomname : roomName}, function(err, findTalkCentent){
+		if (err){return console.error(err);}
+		var users = findTalkCentent[0].users;
+		totalInd = users.length;
+		
+		for(var i = 0, len = totalInd ; i < len ; i +=1){
+			if(users[i] === data.username) {continue;} 
+			searchUserInfo(users[i]);			
+		};
+		allData.content = findTalkCentent;
+	});
+	
+	function searchUserInfo(ctmData){
+		userInfoModel.findOne({username : ctmData}, function(err, users){
+			if (err){ return console.error(err);}
+			var data = {};
+			
+			// 개인 유저의 친구들의 정보 & 나의 정보를 data 객체에 저장.
+			data._myId = users._myId;
+			data.username = users.username;
+			data.myProfilePic = users.myProfilePic;
+			
+			allData.friendsData.push(data);
+			inter.allValue +=1;
+			// 만든 데이터 저장.
+			inter.timeout();
+		});
+	}
+	
+};
 
 // 누군가가 메시지를 보냈을 때 사용.
 exports.sendMsgRoom = function(data, socket){
