@@ -179,6 +179,7 @@ exports.roomCreate = function(){
 };
 
 // 대화 목록을 클릭했을 때 대화 내용 검색.
+// 대화 목록의 Content 프로퍼티 안에는 idx라는 것을 사용하는데, idx 0인 값은 항상 방에서 먼저 대화한 사람을 기준으로 작성.
 exports.searchContent = function(data, socket){
 	console.log("서버에서 Content 검색 요청을 받았당");
 	
@@ -189,14 +190,16 @@ exports.searchContent = function(data, socket){
 			allValue : 0 
 		},
 		allData = {
+			clickInd : data.clickInd,
 			content : null,
 			friendsData : []
 		};
 	var roomName = data.roomname;
 	inter.timeout = function(){
 		if(inter.allValue === totalInd -1){
+			console.log("allData", allData)
 			// 조회가 끝났으니 데이터를 client로 보냄.
-			socket.emit('talkRoomCreateData', allData);
+			socket.emit('talkRoomContentSearchData', allData);
 		};
 	};
 	
@@ -206,8 +209,14 @@ exports.searchContent = function(data, socket){
 		totalInd = users.length;
 		
 		for(var i = 0, len = totalInd ; i < len ; i +=1){
-			if(users[i] === data.username) {continue;} 
-			searchUserInfo(users[i]);			
+			
+			if(users[i] === data.username) {
+				allData.friendsData.push(undefined);
+				console.log("allData.friendsData", allData.friendsData, i)
+				continue;
+			} 
+			console.log(i);
+			searchUserInfo(users[i]);
 		};
 		allData.content = findTalkCentent;
 	});
