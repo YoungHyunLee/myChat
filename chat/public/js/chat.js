@@ -328,6 +328,7 @@ var g = (function(){
 			gnbControl : {
 				obj : {				
 					mainSection : null,
+					allTalkWrap : null,
 					headArea : null,
 					lnbTopMenuBtn : null,
 					lnbTopTalkPrevBtn : null,
@@ -383,12 +384,13 @@ var g = (function(){
 					
 					// 이벤트 바인딩 - lnb
 					L(_obj.lnbTopTalkPrevBtn).on('click', function(){
+						cg.userInfo.nowRoom = null;
 						L(_obj.lnbHeadText).textContent = "Chating";	
 						L(_obj.lnbTopTalkPrevBtn).removeClass('on');
 						L(_obj.lnbTopMenuBtn).addClass('on');
-						
+						L(_obj.allTalkWrap.getElementsByClassName('allTalkList on')[0]).removeClass('on');
 						g.talkPage.prevTalkPage();
-					})
+					});
 					
 					//gnbAreaList
 				}
@@ -454,15 +456,14 @@ var g = (function(){
 				
 				_cg.talkListAreaPage.obj = _obj;
 				
-				// 화면 정의.
-				
+				// 화면 정의.				
 				
 				// 기본 이벤트 정의
 				for(var i = 0, list = _obj.talkListLink, len = list.length ; i < len ; i +=1){
 					L(_obj.talkListLink[i]).on('click', function(e){
 						e.preventDefault();						
-						_this.goToTalkPage(e);
-					}, true);
+						g.talkPage.view(e);
+					}, false);
 				};				
 								
 			},
@@ -477,17 +478,7 @@ var g = (function(){
 			},
 			// 대화방으로 이동할 때 사용. (존재하는 것을 클릭했으므로. 앞단 처리)
 			goToTalkPage : function(e){
-				for(var ele = e.target, _thisEle, ind ;;){
-					_thisEle = L(ele).hasClass('friendList');
-					switch (_thisEle) {
-						case false :
-							ele = ele.parentNode 
-							break;							
-						case true : 
-							ind = L(ele).index();
-							return cg.talkPage.searchTalkRoom(ind); 				
-					}
-				}
+				
 				
 			}
 			// 채팅방으로 넘어갈 때 사용.
@@ -517,21 +508,13 @@ var g = (function(){
 					 g.obj[i] !== undefined ? _obj[i] = g.obj[i] : true;
 				};
 				//_cg.talkPage.obj = _obj;
-				_cg.talkPage.init();
-				
-				// 이벤트 중에서 chat.js로 넘겨서 서버로 보낼 이벤트 체크.
-				L(_obj.sendBtn).on('click', function(e){
-					e.preventDefault();					
-					// _cg에게 obj 객체를 보내고
-					_cg.talkPage.sendMsg(_obj.mainSection);					
-				}, false);
-				
+				//_cg.talkPage.init();
 			},
 			// 각 사람들의 대화 목록 페이지 호출.
-			view : function(ind){				
+			view : function(e){				
 				var _obj = this.obj;
 				if(_obj.isView === false) this.init();
-				
+								 
 				var leftOnBtn = _obj.headArea.getElementsByClassName('topMenuBtn on')[0];
 				var leftPrevBtn = _obj.headArea.getElementsByClassName('topMenuBtn prev')[0];
 				var headText =  _obj.headArea.querySelector('.lnbHeadText a');
@@ -539,10 +522,35 @@ var g = (function(){
 				L(leftOnBtn).removeClass('on');
 				L(leftPrevBtn).addClass('on');
 				headText.textContent = "대화중";
-				
 				// 대화창 보여주기.
-				L(_obj.allTalkWrap).eq(ind).addClass('on');
-				cg.talkListAreaPage.	paintTalkRoom(ind);
+				L(_obj.talkArea).addClass('on');
+								
+				for(var ele = e.target, _thisEle, ind ;;){
+					_thisEle = L(ele).hasClass('friendList');
+					if(_thisEle === false){
+						ele = ele.parentNode;					
+					} else {						
+						ind = L(ele).index();
+						cg.userInfo.nowRoom = _thisEle._roomname;
+						cg.talkPage.searchTalkRoom(ind);
+						break;
+					};
+				};
+				var selectTalkList =  L(_obj.allTalkWrap).eq(ind);
+				L(selectTalkList).addClass('on');
+				// talkRoom event binding	
+				_obj.sendMsgForm = selectTalkList.getElementsByClassName('sendMsgForm')[0];
+				_obj.textInput = _obj.sendMsgForm.elements.textInput;
+				_obj.emoticon = _obj.sendMsgForm.elements.emoticon;
+				_obj.sendBtn = _obj.sendMsgForm.elements.sendBtn;
+				
+				// 이벤트 중에서 chat.js로 넘겨서 서버로 보낼 이벤트 체크.
+				L(_obj.sendBtn).on('click', function(e){
+					e.preventDefault();		
+					// _cg에게 obj 객체를 보내고
+					cg.talkPage.sendMsg(_obj.sendMsgForm);					
+				}, false);
+				//L(_obj.allTalkWrap).eq(ind).addClass('on');
 			},
 			prevTalkPage : function(){
 				var _obj = this.obj;
@@ -575,8 +583,11 @@ socket.on('connect', function (data) {
 // 채팅관련 함수를 넘기기 위해 전역변수 추가.
 var cg = {
 	userInfo : {
-		name : null,
-		id : null
+		username : null,
+		myProfilePic : null,
+		_myId : null,
+		myProfileMsg : null,
+		nowRoom :null
 	},
 	init : function(){
 		// name & id 설정
@@ -592,7 +603,7 @@ var cg = {
 			
 			console.log('sendMsgOtherPeople의 메시지를 받았당');
 			console.log(_tPage, _tPage.obj.talkListArea)
-			_tPage.paintOtherMsg(_tPage.obj.talkListArea, data);		
+			_tPage.paintOnceMsg(_tPage.obj.talkListArea, data);		
 		}); 
 	},
 	// 로그인 - email 페이지 정의
@@ -733,11 +744,10 @@ var cg = {
 			
 			var friendElement = this.friendsTemp(data.myProfilePic, data._myId, data.myProfileMsg);
 			_obj.myInfoArea.innerHTML = friendElement;
-			_obj.myInfoArea._data = {};
-			_obj.myInfoArea._data.username = data.username;
-			_obj.myInfoArea._data.myProfilePic = data.myProfilePic;
-			_obj.myInfoArea._data._myId = data._myId;
-			_obj.myInfoArea._data.myProfileMsg = data.myProfileMsg;
+			cg.userInfo.username = data.username;
+			cg.userInfo.myProfilePic = data.myProfilePic;
+			cg.userInfo._myId = data._myId;
+			cg.userInfo.myProfileMsg = data.myProfileMsg;			
 		},
 		paintMyFriends : function(data){			
 			console.log('친구 목록을 그립니당.data는', data);
@@ -857,6 +867,7 @@ var cg = {
 		obj : {
 			isInit : false,
 			myInfoArea : null,
+			talkArea : null,
 			talkListArea : null,
 			allTalkWrap : null,
 			talkScrollArea : null,
@@ -872,21 +883,12 @@ var cg = {
 			for(var i in _obj){
 				 _g[i] !== undefined ? _obj[i] = _g[i] : true;
 			};			
-			var myObj = _obj.myInfoArea._data;
-			
+			var myObj = cg.userInfo;
 			socket.on('talkRoomContentSearchData', function(data){
 				console.log("나 채팅방 db조회 후에 가져왔다!!", data)
 				_this.paintTalkRoom(data, myObj);
 			});
 			
-			/*
-			_obj.talkListArea = document.querySelector('.mainWrap .talkArea .talkListArea');
-			_obj.talkScrollArea = _obj.talkListArea.parentNode;
-			_obj.mainSection = document.getElementsByClassName('sendMsgForm');
-			_obj.textInput = _obj.mainSection.elements.textInput;
-			_obj.emoticon = _obj.mainSection.elements.emoticon;
-			_obj.sendBtn = _obj.mainSection.elements.sendBtn;
-			*/
 			// 초기 채팅방 입장 시 대화글을 가져옴. 구현 안 됨.
 			//this.paintInitMsg('init');
 			
@@ -905,9 +907,9 @@ var cg = {
 			var data = {
 				clickInd : ind,
 				roomname : obj._roomname,
-				username : _obj.myInfoArea._data.username
+				username : cg.userInfo.username
 			};
-			
+				
 			socket.emit('talkRoomContentSearch', data);
 			console.log("서버로 채팅방 컨텐츠를 검색하도록 실행합니다.")
 		},
@@ -922,17 +924,18 @@ var cg = {
 			var userInfoArray = [],
 				myInd = 0,
 				initRoomObj;
-			if(data.clickInd){
+			if(typeof data.clickInd === 'number'){ // 기존의 것을 클릭했을 때
 				talkRoomOl = L(_obj.allTalkWrap).eq(data.clickInd);
 				initRoomObj = talkRoomOl.getElementsByClassName('talkListArea')[0];
 				initRoomObj.innerHTML = "";
-			} else {
+			} else { // 새로운 것이 생성될 때
 				div.innerHTML = this.talkRoomTemp();
 				_obj.allTalkWrap.appendChild(div.firstChild);
 				talkRoomOl = _obj.allTalkWrap.lastChild;
 				initRoomObj = talkRoomOl.getElementsByClassName('talkListArea')[0];
-			};		
-			
+			};
+			//L(talkRoomOl).addClass('on');
+					
 			// img 정보나 프로필 정보 등의 용도로 저장.
 			for(var j = 0, jList = data.friendsData, jLen = jList.length ; j < jLen ; j +=1){				
 				switch(jList[j] == undefined){
@@ -948,15 +951,17 @@ var cg = {
 			for(var i = 0, list = data.content[0].Content, len = list.length, idx = -1, content, isMe, isMeLast, isDouble, talkElement ; i < len ; i +=1){
 				content = list[i];
 				idx === content.idx ? isDouble = true : isDouble = false;
-				idx = content.idx;				
+				idx = content.idx;
+				isMe = '';
 				if(isDouble === true && myInd === idx){ // 내가 연속적으로 쓸 때, 같은 사람이면서 내가 쓴 것일 경우.
-					talkElement = this.paintMyMsg(initRoomObj, isDouble, userInfoArray[idx].myProfilePic, userInfoArray[idx]._myId, list[i].talkCnt, list[i].date);
+					talkElement = this.paintOnceMsg(initRoomObj, isDouble, isMe, userInfoArray[idx].myProfilePic, userInfoArray[idx]._myId, list[i].talkCnt, list[i].date);
 				} else if(isDouble === true && myInd !== idx) { // 다른 사람이 혼자 연속으로 쓸 때. 같은 사람이면서 내가 쓴 것이 아닌 경우
-					talkElement = this.paintOtherMsg(initRoomObj, isDouble, userInfoArray[idx].myProfilePic, userInfoArray[idx]._myId, list[i].talkCnt, list[i].date);
+					talkElement = this.paintOnceMsg(initRoomObj, isDouble, isMe, userInfoArray[idx].myProfilePic, userInfoArray[idx]._myId, list[i].talkCnt, list[i].date);
 				} else if(isDouble === false && myInd === idx) { // 내가 새롭게 말을 할 때. 새로운 사람이면서 내가 쓴 것일 경우
-					talkElement = this.paintMyMsg(initRoomObj, isDouble, userInfoArray[idx].myProfilePic, userInfoArray[idx]._myId, list[i].talkCnt, list[i].date);
+					isMe = " me";
+					talkElement = this.paintOnceMsg(initRoomObj, isDouble, isMe, userInfoArray[idx].myProfilePic, userInfoArray[idx]._myId, list[i].talkCnt, list[i].date);
 				} else if(isDouble === false && myInd !== idx) { // 다른 사람이 새롭게 말을 할 때. 새로운 사람이면서 내가 쓴 것이 아닌 경우.
-					talkElement = this.paintOtherMsg(initRoomObj, isDouble, userInfoArray[idx].myProfilePic, userInfoArray[idx]._myId, list[i].talkCnt, list[i].date);
+					talkElement = this.paintOnceMsg(initRoomObj, isDouble, isMe, userInfoArray[idx].myProfilePic, userInfoArray[idx]._myId, list[i].talkCnt, list[i].date);
 				};
 				
 				/*
@@ -967,11 +972,12 @@ var cg = {
 					한 번에 많이 그리도록 해야 하므로 수정이 필요함.
 				
 				*/
-				div.innerHTML = talkElement;
+				div.innerHTML = talkElement.temp;
 				frag.appendChild(div.lastChild);
 			};
-			talkRoomOl.appendChild(frag);
-			console.log("끝")
+			initRoomObj.appendChild(frag);
+			
+			
 		},
 		// 채팅방 템플릿
 		talkRoomTemp : function(isMe, picUrl, myId, msg, date){			
@@ -1002,41 +1008,73 @@ var cg = {
 		},
 		sendMsg : function(formObj){
 			// obj 할당.
-			var fpObj = cg.friendsPage.obj,
+			var _cg = cg,
+				fpObj = _cg.friendsPage.obj,
 				_obj = this.obj,			
-				_id = cg.userInfo.name,// + e.srcElement.name;
+				_id = _cg.userInfo.name,// + e.srcElement.name;
 				sendText = formObj.elements.textInput.value;
-			
 			var data = {
-				id : _id,
-				text : sendText
+				userInfo : _cg.userInfo,
+				form : formObj
 			};
-			
 			// 서버로 전송.
-			socket.emit('sendMsg', data);	
+			socket.emit('sendMsg', _cg.userInfo);	
 			
 			// 서버에 넘긴 후 client는 사용자에게 바로 띄워줌.
-			this.paintMyMsg(_obj.talkListArea, sendText);			
+			var allTalkList = _obj.allTalkWrap.getElementsByClassName('allTalkList on')[0],
+				lastTalkList = allTalkList.getElementsByClassName('talkListArea')[0],
+				isMe =  L(lastTalkList.lastChild).hasClass('me') ? ' me' : '';
+			
+			this.paintMyMsg(lastTalkList, isMe, sendText, _cg.userInfo);
 		},
-		paintMyMsg : function(obj, isDouble, picUrl, _myId, talkCnt, date){						
+		paintOnceMsg : function(obj, isDouble, isMe, picUrl, _myId, talkCnt, date){
+			var temp;			
 			if(isDouble){
+				// 내가 쓴 글이 마지막일 경우
+				temp =
+				'<li class="talkText">' +
+					'<span class="msg">' + talkCnt + '</span>' +
+				'</li>';
+				return {obj : obj.lastChild.querySelector('ol'), msg : temp}
+				//obj.parentNode.scrollTop = 99999;			
+			} else {
+				// 상대가 쓴 글이 마지막일 경우
+				temp = 
+				'<li class="talkList' + isMe + '">' +
+					'<div class="talkFriendImg">' +
+						'<img src="../uploads/userUploadPicture/' + picUrl + '" alt ="사용자 프로필 사진">' +
+					'</div>' +
+					'<div class="talkTextArea">' +
+						'<em class="name">' + _myId + '</em>' +
+						'<ol>' +
+							'<li class="talkText">' +
+								'<span class="msg">' + talkCnt + '</span>' +
+							'</li>' +
+						'</ol>' +					
+					'</div>' + 
+				'</li>';					
+				//obj.parentNode.scrollTop = 99999;
+				return {obj : obj, temp : temp}
+			};
+		},
+		paintMyMsg : function(obj, isMe, talkCnt, data){	
+			if(isMe){
 				// 내가 쓴 글이 마지막일 경우
 				L(obj.lastChild.querySelector('ol')).append(
 					'<li class="talkText">' +
 						'<span class="msg">' + talkCnt + '</span>' +
 					'</li>'
 				);
-				obj.parentNode.scrollTop = 99999;				
+				//obj.parentNode.scrollTop = 99999;			
 			} else {
 				// 상대가 쓴 글이 마지막일 경우
-				console.log("내 메시지를 그리는데 false일 때", obj)
 				L(obj).append(
-					'<li class="talkList me">' +
+					'<li class="talkList' + isMe + '">' +
 						'<div class="talkFriendImg">' +
-							'<img src="../uploads/userUploadPicture/' + picUrl + '" alt ="사용자 프로필 사진">' +
+							'<img src="../uploads/userUploadPicture/' + data.myProfilePic + '" alt ="사용자 프로필 사진">' +
 						'</div>' +
 						'<div class="talkTextArea">' +
-							'<em class="name">' + _myId + '</em>' +
+							'<em class="name">' + data._myId + '</em>' +
 							'<ol>' +
 								'<li class="talkText">' +
 									'<span class="msg">' + talkCnt + '</span>' +
@@ -1044,42 +1082,9 @@ var cg = {
 							'</ol>' +					
 						'</div>' + 
 					'</li>'
-				);
-				obj.parentNode.scrollTop = 99999;
+				);			
+				//obj.parentNode.scrollTop = 99999;
 			};
-		},
-		paintOtherMsg : function(obj, isDouble, picUrl, _myId, talkCnt, date){	
-			var _last = obj.lastElementChild;
-			if(isDouble){
-				// 이미 쓰던 사람이 쓴 글이 마지막일 경우				
-				L(obj.lastChild.querySelector('ol')).append(					
-					'<li class="talkText">' +
-						'<span class="msg">' + talkCnt + '</span>' +
-					'</li>'
-				);
-				obj.parentNode.scrollTop = 99999;
-			} else {
-				// 새로운 상대가 쓴 글이 마지막일 경우			
-				L(obj).append(
-					'<li class="talkList">' +
-						'<div class="talkFriendImg">' +
-							'<img src="../uploads/userUploadPicture/' + picUrl + '" alt ="사용자 프로필 사진">' +
-						'</div>' +
-						'<div class="talkTextArea">' +
-							'<em class="name">' + _myId + '</em>' +
-							'<ol>' +
-								'<li class="talkText">' +
-									'<span class="msg">' + talkCnt + '</span>' +
-								'</li>' +
-							'</ol>' +					
-						'</div>' + 
-					'</li>'
-				);
-				obj.parentNode.scrollTop = 99999;
-			};
-			
-			
-			
 		},
 		// 초기 대화방 입장 시 화면 그리는 함수.
 		paintInitMsg : function(a){

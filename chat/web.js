@@ -196,7 +196,7 @@ io.sockets.on('connection', function(socket){
 	
 	// 대화 목록을 클릭했을 때 대화 내용 검색.
 	socket.on('talkRoomContentSearch', function(data){
-		socketAdmin.searchContent(data, socket)
+		socketAdmin.searchContent(data, socket);
 	});
 		
 	// 누군가가 메시지를 보냈을 때 사용.(룸 전용)

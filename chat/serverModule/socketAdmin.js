@@ -197,7 +197,6 @@ exports.searchContent = function(data, socket){
 	var roomName = data.roomname;
 	inter.timeout = function(){
 		if(inter.allValue === totalInd -1){
-			console.log("allData", allData)
 			// 조회가 끝났으니 데이터를 client로 보냄.
 			socket.emit('talkRoomContentSearchData', allData);
 		};
@@ -208,14 +207,11 @@ exports.searchContent = function(data, socket){
 		var users = findTalkCentent[0].users;
 		totalInd = users.length;
 		
-		for(var i = 0, len = totalInd ; i < len ; i +=1){
-			
+		for(var i = 0, len = totalInd ; i < len ; i +=1){			
 			if(users[i] === data.username) {
-				allData.friendsData.push(undefined);
-				console.log("allData.friendsData", allData.friendsData, i)
+				allData.friendsData.push(undefined);				
 				continue;
-			} 
-			console.log(i);
+			};			
 			searchUserInfo(users[i]);
 		};
 		allData.content = findTalkCentent;
@@ -243,7 +239,7 @@ exports.searchContent = function(data, socket){
 // 누군가가 메시지를 보냈을 때 사용.
 exports.sendMsgRoom = function(data, socket){
 	console.log("서버에서 메시지 받았당 roomId는 ")
-	socket.broadcast.to(roomId).emit('sendMsgOtherPeople', data);
+	//socket.broadcast.to(roomId).emit('sendMsgOtherPeople', data);
 };
 
 

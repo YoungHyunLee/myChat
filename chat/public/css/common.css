@@ -197,7 +197,7 @@ html{font-size:16px;}
 .textInputArea{display:none;}
 .talkArea .textInputArea{display:block;position:absolute;bottom:0;left:0;right:0;z-index:10;height:30px;background-color:#eee;}
 .textInputArea .textInputFieldArea{height:26px;position:absolute;top:50%;left:30px;right:1%;-webkit-transform:translate(0, -50%);transform:translate(0, -50%);} 
-.textInputArea .textInputField{box-shadow:none;width:100%;box-sizing:border-box;background-color:#fff;border:1px solid #dfdfdf;border-radius:5px;padding:3px 100px 3px 10px;}
+.textInputArea .textInputField{height:100%;box-shadow:none;width:100%;box-sizing:border-box;background-color:#fff;border:1px solid #dfdfdf;border-radius:5px;padding:3px 100px 3px 10px;}
 .textInputArea .sendBtnWrap{position:absolute;top:50%;right:1%;z-index:5;-webkit-transform:translate(0, -50%);transform:translate(0, -50%);height:23px;}
 .textInputArea .emoticonBtn{padding:0;width:26px;height:23px;float:left;line-height:23px;}
 .textInputArea .sendBtn{color:#707070;padding:0;width:30px;height:23px;border-radius:0 5px 5px 0;background-color:#252;color:#fff;font-size:0.75rem;float:left;}
