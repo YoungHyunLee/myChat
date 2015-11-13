@@ -101,6 +101,16 @@ var g = (function(){
 				};
 				return false			
 			},
+			parentClassSearch : function(a){
+				for(var ele = this, _thisEle ;;){
+					_thisEle = L(ele).hasClass(a);
+					if(_thisEle === false){
+						ele = ele.parentNode;					
+					} else {
+						return ele;
+					};
+				};
+			},
 			append : function(a){
 				/*
 					element.insertAdjacentHTML(position, text);
@@ -318,6 +328,8 @@ var g = (function(){
 				L(_obj.mainSection).addClass('on');				
 				L(_obj.startPage).removeClass('on');
 				L(_obj.friendsArea).addClass('on');
+				
+				g.friendsPage.init();
 				// 기본 이벤트 정의
 				
 				// gnb 
@@ -352,7 +364,7 @@ var g = (function(){
 					_obj.lnbTopTalkPrevBtn = document.getElementById('lnbTopTalkPrevBtn');
 					_obj.lnbHeadText = _obj.headArea.getElementsByClassName('lnbHeadText')[0].children[0];
 					
-										
+					
 					// 이벤트 바인딩 - gnb 
 					for(var i = 0, list = _obj.gnbAreaList, len = list.length ; i < len ; i +=1){
 						L(_obj.gnbAreaList[i]).on('click', function(e){						
@@ -399,10 +411,17 @@ var g = (function(){
 		// Friends 페이지 정의
 		friendsPage : {
 			obj : {
+				isInit : false,
 				mainSection : null,
 				friendsArea : null,
 				talkArea : null,
-				friendList : null
+				friendList : null,
+				profilePop : null, 
+				shadowLink : null,
+				profilePopClose : null,
+				profileBg : null,
+				profilePic : null,
+				profileMyId : null				
 			},
 			init : function(){
 				var _this = this,
@@ -412,17 +431,45 @@ var g = (function(){
 				_obj.mainSection = g.obj.mainSection;
 				_obj.friendsArea = g.obj.friendsArea;
 				_obj.talkArea = g.obj.talkArea;
-				_obj.friendList = document.querySelector('#friendsArea .friendsList .friendList>a'); 
+				_obj.friendList = _obj.friendsArea.querySelectorAll('.friendList>a'); 
+				_obj.profilePop = document.getElementById('profilePop');
+				_obj.shadowLink = _obj.profilePop.firstElementChild;
+				_obj.profilePopClose = document.getElementById('profilePopClose');
+				_obj.profileBg = _obj.profilePop.querySelector('.profileBg img');
+				_obj.profilePic = _obj.profilePop.querySelector('.profilePic img');
+				_obj.profileMyId = _obj.profilePop.getElementsByClassName('profileMyId')[0];
 				
 				_cg.friendsPage.obj = _obj;
+				
 				// 화면 정의.
-				L(_obj.mainSection).addClass('on');
 				
 				// 초기 객체 바인딩
-								
+				for(var i =0, list = _obj.friendList, len = list.length ; i < len ; i +=1){
+					L(list[i]).on('click', function(e){
+						e.preventDefault();
+						var me = L(e.target).parentClassSearch('friendList'), data, isMe;
+						if(me._data){
+							data = me._data;
+							isMe = false;
+						} else {
+							data = cg.userInfo;
+							isMe = true;
+						};
+						_this.profileView(data, isMe);
+					}, false);
+				};
+				
+				L(_obj.shadowLink).on('click', function(e){
+					L(_obj.profilePop).removeClass('on');
+				});
+				L(_obj.profilePopClose).on('click', function(e){
+					L(_obj.profilePop).removeClass('on');
+				});
 			},
 			view : function(){
-				this.init();
+				var _this = this,
+					_obj = this.obj
+				
 			},
 			// 친구 검색 이벤트시 사용
 			searchFriendEvent : function(){
@@ -431,6 +478,22 @@ var g = (function(){
 			// 대화방으로 이동할 때 사용.
 			goToTalkPage : function(){
 				g.talkPage.init();
+			},
+			// 친구 또는 자신의 목록을 클릭했을 때 보여주는 프로필 팝업.
+			profileView : function(data, isMe){
+				var _this = this,
+					_obj = this.obj;
+				var picUrl = isMe ? data.profilePic : data.myProfilePic,
+					picBgUrl = data.profileBg ? data.profileBg : 'default_bg.jpg'; 
+								
+				_obj.profileBg.src = '../uploads/userUploadPicture/' + picBgUrl;
+				_obj.profilePic.src = '../uploads/userUploadPicture/' + picUrl;
+				_obj.profileMyId.innerHTML = data._myId;
+				
+				L(_obj.profilePop).addClass('on');
+				
+				
+				console.log(data , isMe)
 			}
 			// 채팅방으로 넘어갈 때 사용.
 		},
@@ -461,7 +524,7 @@ var g = (function(){
 				// 기본 이벤트 정의
 				for(var i = 0, list = _obj.talkListLink, len = list.length ; i < len ; i +=1){
 					L(_obj.talkListLink[i]).on('click', function(e){
-						e.preventDefault();						
+						e.preventDefault();				
 						g.talkPage.view(e);
 					}, false);
 				};				
@@ -584,9 +647,9 @@ socket.on('connect', function (data) {
 var cg = {
 	userInfo : {
 		username : null,
-		myProfilePic : null,
+		profilePic : null,
 		_myId : null,
-		myProfileMsg : null,
+		profileMsg : null,
 		nowRoom :null
 	},
 	init : function(){
@@ -742,12 +805,12 @@ var cg = {
 				_obj = this.obj;
 			console.log('내 프로필을 그립니당.data는', data);
 			
-			var friendElement = this.friendsTemp(data.myProfilePic, data._myId, data.myProfileMsg);
+			var friendElement = this.friendsTemp(data.profilePic, data._myId, data.profileMsg);
 			_obj.myInfoArea.innerHTML = friendElement;
 			cg.userInfo.username = data.username;
-			cg.userInfo.myProfilePic = data.myProfilePic;
+			cg.userInfo.profilePic = data.profilePic;
 			cg.userInfo._myId = data._myId;
-			cg.userInfo.myProfileMsg = data.myProfileMsg;			
+			cg.userInfo.profileMsg = data.profileMsg;			
 		},
 		paintMyFriends : function(data){			
 			console.log('친구 목록을 그립니당.data는', data);
@@ -758,6 +821,7 @@ var cg = {
 			for(var i = 0, list = data.friendData, len = list.length, friendElement ; i < len ; i +=1){
 				friendElement = this.friendsTemp(list[i].myProfilePic, list[i]._myId, list[i].profileMsg);
 				div.innerHTML = friendElement;
+				div.lastChild._data = list[i];
 				frag.appendChild(div.lastChild);
 			};
 			friendOl.appendChild(frag);
@@ -954,14 +1018,14 @@ var cg = {
 				idx = content.idx;
 				isMe = '';
 				if(isDouble === true && myInd === idx){ // 내가 연속적으로 쓸 때, 같은 사람이면서 내가 쓴 것일 경우.
-					talkElement = this.paintOnceMsg(initRoomObj, isDouble, isMe, userInfoArray[idx].myProfilePic, userInfoArray[idx]._myId, list[i].talkCnt, list[i].date);
+					talkElement = this.paintOnceMsg(initRoomObj, isDouble, isMe, userInfoArray[idx].profilePic, userInfoArray[idx]._myId, list[i].talkCnt, list[i].date);
 				} else if(isDouble === true && myInd !== idx) { // 다른 사람이 혼자 연속으로 쓸 때. 같은 사람이면서 내가 쓴 것이 아닌 경우
-					talkElement = this.paintOnceMsg(initRoomObj, isDouble, isMe, userInfoArray[idx].myProfilePic, userInfoArray[idx]._myId, list[i].talkCnt, list[i].date);
+					talkElement = this.paintOnceMsg(initRoomObj, isDouble, isMe, userInfoArray[idx].profilePic, userInfoArray[idx]._myId, list[i].talkCnt, list[i].date);
 				} else if(isDouble === false && myInd === idx) { // 내가 새롭게 말을 할 때. 새로운 사람이면서 내가 쓴 것일 경우
 					isMe = " me";
-					talkElement = this.paintOnceMsg(initRoomObj, isDouble, isMe, userInfoArray[idx].myProfilePic, userInfoArray[idx]._myId, list[i].talkCnt, list[i].date);
+					talkElement = this.paintOnceMsg(initRoomObj, isDouble, isMe, userInfoArray[idx].profilePic, userInfoArray[idx]._myId, list[i].talkCnt, list[i].date);
 				} else if(isDouble === false && myInd !== idx) { // 다른 사람이 새롭게 말을 할 때. 새로운 사람이면서 내가 쓴 것이 아닌 경우.
-					talkElement = this.paintOnceMsg(initRoomObj, isDouble, isMe, userInfoArray[idx].myProfilePic, userInfoArray[idx]._myId, list[i].talkCnt, list[i].date);
+					talkElement = this.paintOnceMsg(initRoomObj, isDouble, isMe, userInfoArray[idx].profilePic, userInfoArray[idx]._myId, list[i].talkCnt, list[i].date);
 				};
 				
 				/*
@@ -1071,7 +1135,7 @@ var cg = {
 				L(obj).append(
 					'<li class="talkList' + isMe + '">' +
 						'<div class="talkFriendImg">' +
-							'<img src="../uploads/userUploadPicture/' + data.myProfilePic + '" alt ="사용자 프로필 사진">' +
+							'<img src="../uploads/userUploadPicture/' + data.profilePic + '" alt ="사용자 프로필 사진">' +
 						'</div>' +
 						'<div class="talkTextArea">' +
 							'<em class="name">' + data._myId + '</em>' +

@@ -173,7 +173,7 @@ var socketAdmin = require('./serverModule/socketAdmin.js');
 
 // 소켓 통신 정의
 io.sockets.on('connection', function(socket){
-	
+
 	// 초기 설정.	
 	socket.on('init', function (data) {
 		socket.rooms = [];
@@ -206,6 +206,7 @@ io.sockets.on('connection', function(socket){
 			
 	// 접속이 종료되면 trigger
   	socket.on('disconnect', function () {
+  		console.log(socket)
   		for(var i = 0, list = socket.rooms, len = list.length; i < len ; i +=1){
   			socket.leave(list[i]);
   			console.log("접종!! ", socket.rooms)

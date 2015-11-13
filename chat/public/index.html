@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no,minimum-scale=1.0,maximum-scale=1,0" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no,minimum-scale=1.0,maximum-scale=1.0" />
 <title>Number's chat</title>
 <link href="./bootstrap/dist/css/bootstrap.css" rel="stylesheet" type="text/css" />
 <link href="./bootstrap/dist/css/bootstrap-theme.css" rel="stylesheet" type="text/css" />
@@ -263,6 +263,36 @@
 	
 	
 	
+	<!-- 개인 프로필 팝업 -->
+	<article id='profilePop' class="layerPop profile">
+		<a href=# class="popShadow"></a>
+		<div class="popContainer">			
+			<div class="profileBg">
+				<img src="../uploads/userUploadPicture/default.jpg" alt="개인 배경 이미지">
+			</div>
+			<div class="profileContent">
+				<div class="personalArea">
+					<div class="profilePic">
+						<img src="../uploads/userUploadPicture/default.jpg" alt="개인 이미지">
+					</div>
+					<em class="profileMyId">프로필명</em>
+				</div>
+				<a id="profilePopClose" href=# title="프로필 창 닫기"><span class="glyphicon glyphicon-remove"></span></a>
+			</div>
+			<footer class="utilBtns">
+				<button id="myProfileSettingBtn" type="button" class="btn btn-lg btn-link" title="프로필 설정">
+					<span class="glyphicon glyphicon-pencil"></span>
+					<em>프로필 설정</em>
+				</button>
+				<button id="talkUserBtn" type="button" class="btn btn-lg btn-link" title="대화하기">
+					<span class="glyphicon glyphicon-comment"></span>
+					<em>대화</em>
+				</button>
+			</footer>
+		</div>
+	</article>
+		
+	<!-- 로딩 바 -->
 	<article id='loadingBar' class="loadingBar">
 		<div class="shadow"></div>
 		<div class="loadImgArea">
@@ -273,7 +303,6 @@
 
 <script src="socket.io/socket.io.js"></script>
 <script src="./js/chat.js"></script>
-<!--
 <script src="./js/jquery.min.js"></script>
 <script src="./bootstrap/dist/js/bootstrap.min.js"></script>
 <script>
@@ -286,7 +315,6 @@
   ga('send', 'pageview');
 
 </script>
--->
 
 
 

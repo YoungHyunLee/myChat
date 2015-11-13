@@ -27,8 +27,9 @@ exports.signUpEmail = function(data, socket){
 					_myId : data.username,
 					username : data.username,	
 					email : data.email,	
-					myProfileMsg : null,
-					myProfilePic : 'person.jpg',
+					profileMsg : null,
+					profileBg : 'default_bg.jpg',
+					profilePic : 'default.jpg',
 					friendsList : []
 				});				
 				
@@ -79,8 +80,8 @@ exports.roomInit = function(data, socket){
 		_myId : data.username,
 		username : data.username,	
 		email : data.email,	
-		myProfileMsg : null,
-		myProfilePic : 'person.jpg',
+		profileMsg : null,
+		profilePic : 'person.jpg',
 		friendsList : []
 	});	
 	var signUpEmailSchema = new Schema({
@@ -119,8 +120,8 @@ exports.roomInit = function(data, socket){
 		// 개인 유저의 친구들의 정보 & 나의 정보를 data 객체에 저장.
 		data._myId = users._myId;
 		data.username = users.username;
-		data.myProfilePic = users.myProfilePic;
-		data.myProfileMsg = users.myProfileMsg;
+		data.profilePic = users.myProfilePic;
+		data.profileMsg = users.myProfileMsg;
 		
 		allData.data = data;
 		allData.friendData = users.friendsList;
@@ -225,7 +226,7 @@ exports.searchContent = function(data, socket){
 			// 개인 유저의 친구들의 정보 & 나의 정보를 data 객체에 저장.
 			data._myId = users._myId;
 			data.username = users.username;
-			data.myProfilePic = users.myProfilePic;
+			data.profilePic = users.myProfilePic;
 			
 			allData.friendsData.push(data);
 			inter.allValue +=1;
