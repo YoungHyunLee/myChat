@@ -62,7 +62,15 @@ db.once('open', function(){
 			{
 				_id : 0,
 				idx : Number,
-				date : String,
+				date : {
+					year : Number,
+					month : String,
+					date : String,
+					day : String, // 일요일부터 시작 0~6까지의 값.
+					hours : Number,
+					minutes : Number,
+					seconds : Number
+				},
 				talkCnt : String
 			}
 		],
@@ -70,7 +78,7 @@ db.once('open', function(){
 	});
 	// 그 스키마를 가진 모델 생성
 	var TalkMeg = mongoose.model('talkMegs', talkMegSchema);
-	global.talkMegModel = talkMegModel = TalkMeg;
+	global.talkMegModel = talkMegModel = TalkMeg;	
 	
 	/*
 	var UserInfo1 = new UserInfo({
@@ -141,6 +149,7 @@ db.once('open', function(){
 	});
 	UserInfo2.save();	
 	*/
+		
 });
 
 
@@ -173,7 +182,6 @@ var socketAdmin = require('./serverModule/socketAdmin.js');
 
 // 소켓 통신 정의
 io.sockets.on('connection', function(socket){
-
 	// 초기 설정.	
 	socket.on('init', function (data) {
 		socket.rooms = [];
@@ -206,7 +214,6 @@ io.sockets.on('connection', function(socket){
 			
 	// 접속이 종료되면 trigger
   	socket.on('disconnect', function () {
-  		console.log(socket)
   		for(var i = 0, list = socket.rooms, len = list.length; i < len ; i +=1){
   			socket.leave(list[i]);
   			console.log("접종!! ", socket.rooms)

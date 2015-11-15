@@ -178,11 +178,19 @@ var TalkMeg1 = new TalkMeg({
 		{
 			_id : 0,
 			idx : '0',
-			date : new Date(),
+			date : {
+				year : Number,
+				month : String,
+				day : String,
+				week : String,
+				hours : Number,
+				minutes : Number,
+				seconds : Number
+			},
 			talkCnt : '테스트 메시지 처음'
 		}
 	],
-	lastIndex : 0
+	lastIndex : 0		
 });
 TalkMeg1.save();
 */

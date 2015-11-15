@@ -188,7 +188,8 @@ exports.searchContent = function(data, socket){
 		inter = {
 			timeout : null,
 			interVal : null,
-			allValue : 0 
+			allValue : 0,
+			isForEnd : false
 		},
 		allData = {
 			clickInd : data.clickInd,
@@ -197,7 +198,7 @@ exports.searchContent = function(data, socket){
 		};
 	var roomName = data.roomname;
 	inter.timeout = function(){
-		if(inter.allValue === totalInd -1){
+		if(inter.allValue === totalInd -1 && inter.isForEnd){
 			// 조회가 끝났으니 데이터를 client로 보냄.
 			socket.emit('talkRoomContentSearchData', allData);
 		};
@@ -208,19 +209,23 @@ exports.searchContent = function(data, socket){
 		var users = findTalkCentent[0].users;
 		totalInd = users.length;
 		
-		for(var i = 0, len = totalInd ; i < len ; i +=1){			
+		for(var i = 0, len = totalInd ; i < len ; i +=1){
+			console.log(i, data.username, users[i] === data.username)	
 			if(users[i] === data.username) {
-				allData.friendsData.push(undefined);				
+				allData.friendsData[i] = undefined;				
 				continue;
-			};			
-			searchUserInfo(users[i]);
+			};	
+			console.log(users, i, data.username)
+			searchUserInfo(users[i], i);
 		};
 		allData.content = findTalkCentent;
+		inter.isForEnd = true;
+		inter.timeout();
 	});
 	
-	function searchUserInfo(ctmData){
+	function searchUserInfo(ctmData, ind){
 		userInfoModel.findOne({username : ctmData}, function(err, users){
-			if (err){ return console.error(err);}
+			if (err){return console.error(err);}
 			var data = {};
 			
 			// 개인 유저의 친구들의 정보 & 나의 정보를 data 객체에 저장.
@@ -228,7 +233,7 @@ exports.searchContent = function(data, socket){
 			data.username = users.username;
 			data.profilePic = users.myProfilePic;
 			
-			allData.friendsData.push(data);
+			allData.friendsData[ind] = data;
 			inter.allValue +=1;
 			// 만든 데이터 저장.
 			inter.timeout();
@@ -239,8 +244,71 @@ exports.searchContent = function(data, socket){
 
 // 누군가가 메시지를 보냈을 때 사용.
 exports.sendMsgRoom = function(data, socket){
-	console.log("서버에서 메시지 받았당 roomId는 ")
-	//socket.broadcast.to(roomId).emit('sendMsgOtherPeople', data);
+	/*
+	 	{
+	 		userInfo : {
+	 			_myId: "숫자놀이"
+				id: "1447481855106start"
+				name: "myRoom2"
+				nowRoom: "숫자놀이_0"
+				profileMsg: "핑크는 핑크핑크해!!"
+				profilePic: "person1.jpg"
+				username: "숫자놀이"
+	 		},
+	 		textValue : '123'
+	 	}	 	 	
+	 */
+	console.log("서버에서 메시지 받았당 roomId는 ", data)
+	var date = new Date();
+	talkMegModel.find({roomname : data.userInfo.nowRoom}, function(err, findTalkCentent){
+		var userInd,
+			content = findTalkCentent[0].Content;
+		for(var i = 0, list = findTalkCentent[0]["users"], len = list.length ; i < len ; i +=1){		
+			if(list[i] === data.userInfo.username){
+				userInd = i;
+				break;
+			};
+		};
+		var talkMeg = {
+			_id : 0,
+			idx : userInd, // 누가 보냈냐.
+			date : {
+				year : date.getFullYear(), // getYear는 비표준 폐기됨.
+				month : date.getMonth(), // day처럼 0부터 시작하는 듯.
+				date : date.getDate(), 
+				day : date.getDay(), // 일요일부터 시작 0~6까지의 값.
+				hours : date.getHours(),
+				minutes : date.getMinutes(),
+				seconds : date.getSeconds()
+			},
+			talkCnt : data.textValue
+		};
+		
+		talkMegModel.findOneAndUpdate(
+			{roomname : data.userInfo.nowRoom}, 
+			{$push: {Content: talkMeg}},
+			{upsert:true}, function(err, doc){
+				if(err) { return console.error('Failed to update'); }
+				console.log('Update Success');
+				var content = doc.Content,
+					idx = content[content.length-2].idx
+				var isDouble =  idx === userInd
+				console.log('idx', idx, userInd)
+				// data를 만들어서 클라이언트에게 보냄
+				var _data = {
+					userInfo : data.userInfo,
+					textValue : data.textValue,
+					date : talkMeg.date,
+					isDouble : isDouble,
+					idx : idx
+				};
+				
+				socket.broadcast.to(data.userInfo.nowRoom).emit('sendMsgOtherPeople', _data);
+				
+			}
+		);		
+	});
+	
 };
 
 

@@ -254,7 +254,7 @@ var g = (function(){
 						_obj.isSignUpPageSendServer = true;						
 						return _cg.signUpPage.sendServer(e, signUpForm, _obj.email_signUpPage);
 					}
-				}, false)
+				}, false);
 				
 			},
 			// email에서 로그인 페이지로 넘어갈 때 사용.
@@ -443,6 +443,8 @@ var g = (function(){
 				
 				// 화면 정의.
 				
+				
+				
 				// 초기 객체 바인딩
 				for(var i =0, list = _obj.friendList, len = list.length ; i < len ; i +=1){
 					L(list[i]).on('click', function(e){
@@ -594,7 +596,7 @@ var g = (function(){
 						ele = ele.parentNode;					
 					} else {						
 						ind = L(ele).index();
-						cg.userInfo.nowRoom = _thisEle._roomname;
+						cg.userInfo.nowRoom = L(ele)._roomname;
 						cg.talkPage.searchTalkRoom(ind);
 						break;
 					};
@@ -653,20 +655,44 @@ var cg = {
 		nowRoom :null
 	},
 	init : function(){
-		// name & id 설정
-		this.userInfo.name = 'myRoom2';
-		this.userInfo.id = new Date().getTime() + 'start';
-		
 		// 초기화
 		
 		var _this = this;
 		// 누군가가 글을 보낸 후 내 화면에 그릴 때.
 		socket.on('sendMsgOtherPeople', function (data) {
-			var _tPage = _this.talkPage;
-			
+			/*
+				userInfo : data.userInfo,
+				textValue : data.textValue,
+				date : talkMeg.date,
+				isDouble : isDouble,
+				idx : idx
+				
+				userInfo : {
+		 			_myId: "숫자놀이"
+					id: "1447481855106start"
+					name: "myRoom2"
+					nowRoom: "숫자놀이_0"
+					profileMsg: "핑크는 핑크핑크해!!"
+					profilePic: "person1.jpg"
+					username: "숫자놀이"
+		 		},
+			*/
 			console.log('sendMsgOtherPeople의 메시지를 받았당');
-			console.log(_tPage, _tPage.obj.talkListArea)
-			_tPage.paintOnceMsg(_tPage.obj.talkListArea, data);		
+			var gObj = g.viewGlobal.obj,
+				roomEle = document.getElementById(data.userInfo.nowRoom),
+				frag = document.createDocumentFragment();
+						
+			_this.talkPage.paintOnceMsg(frag, data.isDouble, '', data.userInfo.profilePic, data.userInfo._myId, data.textValue, data.date);	
+			
+			
+			/*
+			 var div = document.createElement('div');
+			div.innerHTML = talkElement.temp;
+			 * */
+			gObj.allTalkWrap.eq(L(roomEle).index()).getElementsByClassName('talkListArea')[0].appendChild(frag)
+			
+			// paintOnceMsg : function(obj, isDouble, isMe, picUrl, _myId, talkCnt, date){
+			// return {obj : obj, temp : temp}
 		}); 
 	},
 	// 로그인 - email 페이지 정의
@@ -870,7 +896,7 @@ var cg = {
 				content = list[i].Content;
 				talkElement = this.talkListTemp(undefined, list[i].users, content[content.length-1].date, content[content.length-1].talkCnt);
 				div.innerHTML = talkElement;
-				div.lastChild._roomname = list[i].roomname;
+				div.lastChild.id = div.lastChild._roomname = list[i].roomname;
 				frag.appendChild(div.lastChild);
 				
 				// 채팅 룸 초기화.				
@@ -1012,20 +1038,20 @@ var cg = {
 				}
 			};
 			console.log("채팅방 초기화 전에 데이터 검색", userInfoArray)
-			for(var i = 0, list = data.content[0].Content, len = list.length, idx = -1, content, isMe, isMeLast, isDouble, talkElement ; i < len ; i +=1){
+			for(var i = 0, list = data.content[0].Content, len = list.length, idx = -1, content, isMe, isDouble, talkElement ; i < len ; i +=1){
 				content = list[i];
 				idx === content.idx ? isDouble = true : isDouble = false;
 				idx = content.idx;
 				isMe = '';
 				if(isDouble === true && myInd === idx){ // 내가 연속적으로 쓸 때, 같은 사람이면서 내가 쓴 것일 경우.
-					talkElement = this.paintOnceMsg(initRoomObj, isDouble, isMe, userInfoArray[idx].profilePic, userInfoArray[idx]._myId, list[i].talkCnt, list[i].date);
+					this.paintOnceMsg(frag, isDouble, isMe, userInfoArray[idx].profilePic, userInfoArray[idx]._myId, list[i].talkCnt, list[i].date);
 				} else if(isDouble === true && myInd !== idx) { // 다른 사람이 혼자 연속으로 쓸 때. 같은 사람이면서 내가 쓴 것이 아닌 경우
-					talkElement = this.paintOnceMsg(initRoomObj, isDouble, isMe, userInfoArray[idx].profilePic, userInfoArray[idx]._myId, list[i].talkCnt, list[i].date);
+					this.paintOnceMsg(frag, isDouble, isMe, userInfoArray[idx].profilePic, userInfoArray[idx]._myId, list[i].talkCnt, list[i].date);
 				} else if(isDouble === false && myInd === idx) { // 내가 새롭게 말을 할 때. 새로운 사람이면서 내가 쓴 것일 경우
 					isMe = " me";
-					talkElement = this.paintOnceMsg(initRoomObj, isDouble, isMe, userInfoArray[idx].profilePic, userInfoArray[idx]._myId, list[i].talkCnt, list[i].date);
+					this.paintOnceMsg(frag, isDouble, isMe, userInfoArray[idx].profilePic, userInfoArray[idx]._myId, list[i].talkCnt, list[i].date);
 				} else if(isDouble === false && myInd !== idx) { // 다른 사람이 새롭게 말을 할 때. 새로운 사람이면서 내가 쓴 것이 아닌 경우.
-					talkElement = this.paintOnceMsg(initRoomObj, isDouble, isMe, userInfoArray[idx].profilePic, userInfoArray[idx]._myId, list[i].talkCnt, list[i].date);
+					this.paintOnceMsg(frag, isDouble, isMe, userInfoArray[idx].profilePic, userInfoArray[idx]._myId, list[i].talkCnt, list[i].date);
 				};
 				
 				/*
@@ -1035,12 +1061,9 @@ var cg = {
 					하지만 하나씩 그리는 건 지금이 맞고, 
 					한 번에 많이 그리도록 해야 하므로 수정이 필요함.
 				
-				*/
-				div.innerHTML = talkElement.temp;
-				frag.appendChild(div.lastChild);
+				*/				
 			};
-			initRoomObj.appendChild(frag);
-			
+			initRoomObj.appendChild(frag);			
 			
 		},
 		// 채팅방 템플릿
@@ -1079,10 +1102,10 @@ var cg = {
 				sendText = formObj.elements.textInput.value;
 			var data = {
 				userInfo : _cg.userInfo,
-				form : formObj
+				textValue : sendText				
 			};
 			// 서버로 전송.
-			socket.emit('sendMsg', _cg.userInfo);	
+			socket.emit('sendMsg', data);	
 			
 			// 서버에 넘긴 후 client는 사용자에게 바로 띄워줌.
 			var allTalkList = _obj.allTalkWrap.getElementsByClassName('allTalkList on')[0],
@@ -1092,6 +1115,7 @@ var cg = {
 			this.paintMyMsg(lastTalkList, isMe, sendText, _cg.userInfo);
 		},
 		paintOnceMsg : function(obj, isDouble, isMe, picUrl, _myId, talkCnt, date){
+			var div = document.createElement('div');
 			var temp;			
 			if(isDouble){
 				// 내가 쓴 글이 마지막일 경우
@@ -1099,7 +1123,9 @@ var cg = {
 				'<li class="talkText">' +
 					'<span class="msg">' + talkCnt + '</span>' +
 				'</li>';
-				return {obj : obj.lastChild.querySelector('ol'), msg : temp}
+				div.innerHTML = temp;
+				obj.lastChild.querySelector('ol').appendChild(div.lastChild)
+				return obj
 				//obj.parentNode.scrollTop = 99999;			
 			} else {
 				// 상대가 쓴 글이 마지막일 경우
@@ -1118,7 +1144,9 @@ var cg = {
 					'</div>' + 
 				'</li>';					
 				//obj.parentNode.scrollTop = 99999;
-				return {obj : obj, temp : temp}
+				div.innerHTML = temp;
+				obj.appendChild(div.lastChild)
+				return obj
 			};
 		},
 		paintMyMsg : function(obj, isMe, talkCnt, data){	
