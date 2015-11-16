@@ -37,8 +37,8 @@ html{font-size:16px;}
 .loadingBar{display:none;position:absolute;top:0;left:0;right:0;bottom:0;z-index:1100;}
 .loadingBar.on{display:block;}
 .loadingBar .shadow{position:absolute;top:0;left:0;right:0;bottom:0;background-color:rgba(0,0,0,.5);}
-.loadingBar .loadImgArea{display:inline-block;position:absolute;top:50%;left:50%;-webkit-transform:translate(-50%, -50%);transform:translate(-50%, -50%);}
-.loadingBar .loadImgArea img{max-width:80%;}
+.loadingBar .loadImgArea{display:inline-block;position:absolute;top:50%;left:50%;-webkit-transform:translate(-50%, -50%);transform:translate(-50%, -50%);font-size:0;}
+.loadingBar .loadImgArea img{-webkit-transform:scale(0.5, 0.5);transform:scale(0.5, 0.5)}
 
 
 /* 공통 정의 */
@@ -76,7 +76,7 @@ html{font-size:16px;}
 .helpBtn{position:absolute;bottom:15px;right:15px;border:2px solid #fff;border-radius:20px;width:40px;height:40px;font-size:1.5rem;color:#fff;}
 
 /* 팝업 공통 */
-.layerPop{position:absolute;top:0;left:0;right:0;bottom:0;z-index:1000;visibility:hidden;opacity:0;}
+.layerPop{position:absolute;top:0;left:0;right:0;bottom:0;z-index:1000;visibility:hidden;opacity:0;-webkit-transition:opacity .3s;transition:opacity .3s;}
 .layerPop.on{visibility:visible;opacity:1;}
 .popShadow{position:absolute;top:0;left:0;right:0;bottom:0;background-color:rgba(0,0,0,.5);}
 .popContainer{position:absolute;top:50%;left:50%;-webkit-transform:translate(-50%, -50%);transform:translate(-50%, -50%);width:500px;}
@@ -101,7 +101,7 @@ html{font-size:16px;}
 
 
 /* 회원가입 - email */
-.signUpPage{display:none;background-color:#fff;position:absolute;top:0;bottom:0;left:100%;z-index:50;width:100%;-webkit-transition:left .3s;transition:left .3s;}
+.signUpPage{display:none;background-color:#fff;overflow:auto;position:absolute;top:0;bottom:0;left:100%;z-index:50;width:100%;-webkit-transition:left .3s;transition:left .3s;}
 .signUpPage.on{display:block;left:0%;}
 .signUpPage .head{font-size:1.5rem;color:#222;font-weight:bold;text-align:center;padding:3rem 4rem;background-color:#f6f6f6;border-bottom:1px solid #ddd;margin-bottom:1rem;}
 .signUpPage .stepStatusArea{padding-bottom:2rem;}
@@ -125,14 +125,13 @@ html{font-size:16px;}
 
 /* lnb(header) */
 .lnbBar{height:100%;background-color:#fff;position:relative;z-index:99;}
-.lnbBar .topMenuBtn, .lnbBar .searchFireBtn{position:absolute;top:0;height:100%;width:60px;display:none;}
-.lnbBar .topMenuBtn.on{display:inline-block;left:0;}
-.lnbBar .searchFireBtn{right:0;}
-.topMenuBtn .icon, .searchFireBtn .icon{display:block;position:absolute;top:50%;left:50%;-webkit-transform:translate(-50%, -50%);transform:translate(-50%, -50%);}
+.lnbBar .topMenuBtn{position:absolute;top:0;height:100%;width:60px;display:none;left:0;font-size:1.5rem;}
+.lnbBar .topMenuBtn.on{display:inline-block;}
+.lnbBar .friendSearchAreaBtn{left:auto;right:0;}
+.topMenuBtn .icon, .topMenuBtn .glyphicon{display:block;position:absolute;top:50%;left:50%;-webkit-transform:translate(-50%, -50%);transform:translate(-50%, -50%);}
 .topMenuBtn.utilMenu .icon{background:url(../images/nav_menu.png) no-repeat;width:38px;height:36px;}
 .topMenuBtn.prev .icon{background:url(../images/nav_menu.png) no-repeat;width:38px;height:36px;}
- 
-.searchFireBtn .icon{float:right;background:url(../images/nav_search.png) no-repeat;width:32px;height:32px;}
+
 .lnbHead{position:absolute;top:50%;left:50%;-webkit-transform:translate(-50%, -50%);transform:translate(-50%, -50%);}
 .lnbHead .lnbHeadText a{color:#36afe6;font-size:2rem;display:inline-block;}
 
@@ -149,26 +148,34 @@ html{font-size:16px;}
 .gnbBar .gnbList{float:left;width:33.3%;border-left:1px solid #999;box-sizing:border-box;text-align:center;}
 .gnbBar .gnbList:first-child{border-left:0;}
 
-.gnbBtn{width:100%;font-size:2rem;text-align:center;line-height:40px;color:#333;}
+.gnbBtn{width:100%;font-size:1.625rem;text-align:center;line-height:48px;color:#333;}
 
 /* 친구 목록 & 대화 목록 공통 */
 .waitArea{top:61px;bottom:41px;display:none;}
 .waitArea.on{display:block;}
+.groupTitle{color:#7B8AD8;background-color:#eee;display:block;padding-left:5px;}
 .friendsList{}
-.friendList{height:80px;position:relative;}
+.friendList{height:60px;position:relative;}
 .friendList a{display:block;height:100%;}
-.friendImg{position:absolute;top:10px;left:0;width:60px;height:60px;margin:0 10px;border-radius:30px;overflow:hidden;}
+.friendImg{position:absolute;top:10px;left:0;width:40px;height:40px;margin:0 10px;border-radius:30px;overflow:hidden;}
 .friendImg img{position:absolute;top:50%;left:50%;-webkit-transform:translate(-50%, -50%);transform:translate(-50%, -50%);width:100%;}
-.friendText{margin-left:80px;}
-.friendText .name{font-size:1.375rem;color:#000;line-height:80px;}
-.friendText .statusMsg{position:absolute;top:50%;right:15px;-webkit-transform:translate(0, -50%);transform:translate(0, -50%);display:inline-block;box-sizing:border-box;background-color:#43B5E8;color:#fff;border-radius:10px;padding:3px 10px;}
+.friendText{width:100%;padding-left:60px;}
+.friendText .name{font-size:1.375rem;color:#000;line-height:60px;font-size:0.875rem;max-width:30%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.friendText .statusMsg{max-width:50%;font-size:0.6875rem;max-height:2.5rem;overflow:hidden;position:absolute;top:50%;right:15px;-webkit-transform:translate(0, -50%);transform:translate(0, -50%);display:inline-block;box-sizing:border-box;background-color:#43B5E8;color:#fff;border-radius:10px;padding:0.25rem 10px;}
 .friendText .statusMsg:empty{height:30px;}
 
 /* 친구 목록 */
 .waitArea.friends{}
 
+.friendSearch.layerPop{z-index:900;}
+.friendSearch.layerPop .popContainer{width:260px;height:250px;background-color:#fff;border-radius:10px;}
+.friendSearch.layerPop .popHeader{background-color:#92B54E;color:#fff;font-size:0.875rem;height:auto;border:0;border-radius:10px 10px 0 0;}
+.friendSearch.layerPop .searchBar{margin:10px auto;width:90%;}
+.friendSearch.layerPop .searchResult{}
+
+
 /* 개인 프로필 팝업 */
-.layerPop.profile{-webkit-transition:opacity .3s;transition:opacity .3s;}
+.layerPop.profile{}
 .layerPop.profile .popContainer{width:260px;height:400px;background-color:#fff;}
 .layerPop.profile .profileBg{position:absolute;top:0;left:0;right:0;height:150px;overflow:hidden;}
 .profileBg img{min-width:100%;position:absolute;top:50%;left:50%;-webkit-transform:translate(-50%, -50%);transform:translate(-50%, -50%);}
@@ -186,18 +193,19 @@ html{font-size:16px;}
 
 
 /* 대화 목록 */
-.waitArea.talkListArea .friendText{height:100%;box-sizing:border-box;padding:10px 10px 0 0;position:relative;border-bottom:1px solid #ddd;}
-.friendText .names{font-weight:bold;line-height:1;font-size:1.125rem;max-width:calc(100% - 6rem);display:inline-block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.waitArea.talkListArea .friendList{height:auto;}
+.waitArea.talkListArea .friendText{height:100%;box-sizing:border-box;padding:10px 10px 10px 60px;position:relative;border-bottom:1px solid #ddd;}
+.friendText .names{font-weight:bold;line-height:1;font-size:1rem;max-width:calc(100% - 6rem);display:inline-block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .friendText .talkNum{font-size:0.875rem;color:#f0f;display:inline-block;vertical-align:top;}
-.friendText .lastMsgDate{position:absolute;top:10px;right:10px;color:#666;font-size:0.875rem;}
-.friendText .talkMsg{display:block;color:#333;font-size:0.875rem;line-height:1.3;max-height:2.3rem;overflow:hidden;}
+.friendText .lastMsgDate{position:absolute;top:10px;right:10px;color:#666;font-size:0.75rem;}
+.friendText .talkMsg{display:block;color:#333;font-size:0.875rem;line-height:1.3;overflow:hidden;height:2.275rem;}
 
 /* 대화창 */
 .waitArea.talkArea{top:61px;background-color:#8685CE;position:absolute;left:0;right:0;bottom:0;z-index:50;}
 .allTalkWrap, .allTalkList{height:100%;}
 .allTalkList{display:none;}
 .allTalkList.on{display:block;}
-.allTalkList>.scrollArea{bottom:30px;}
+.allTalkList>.scrollArea{bottom:30px;padding-top:10px;padding-bottom:5px;}
 
 .talkListArea .talkList{position:relative;}
 .talkListArea .talkList a{display:block;}
@@ -209,7 +217,7 @@ html{font-size:16px;}
 .talkTextArea .talkText{max-width:70%;background-color:#fff;border-radius:3px;padding:3px 10px;float:left;clear:both;margin-bottom:3px;box-sizing:border-box;min-height:26px;font-size:0.75rem;line-height:20px;}
 
 .talkListArea .talkList.me .talkFriendImg{left:auto;right:0;}
-.talkListArea .talkList.me .talkTextArea{margin-left:0;margin-right:50px;}
+.talkListArea .talkList.me .talkTextArea{margin-left:0;margin-right:10px;}
 .talkListArea .talkList.me .talkTextArea .name{text-align:right;}
 .talkListArea .talkList.me .talkTextArea .talkText{float:right;background-color:#F5DAC7;}
 

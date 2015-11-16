@@ -107,10 +107,21 @@ exports.roomInit = function(data, socket){
 	*/
 	
 	// 데이터를 저장할 객체.
+	var nowDate = new Date();
 	var allData = {
 		data : null, // 로그인한 사람의 username
 		friendData : null, // 친구 목록
-		talkMegData : [] // 대화 목록
+		talkMegData : [], // 대화 목록
+		date : 
+			{
+				year : nowDate.getFullYear(), // getYear는 비표준 폐기됨.
+				month : nowDate.getMonth(), // day처럼 0부터 시작하는 듯.
+				date : nowDate.getDate(), 
+				day : nowDate.getDay(), // 일요일부터 시작 0~6까지의 값.
+				hours : nowDate.getHours(),
+				minutes : nowDate.getMinutes(),
+				seconds : nowDate.getSeconds()
+			}
 	};
 	// 개인정보에 해당하는 모델을 읽음. 친구목록 뿌리기.
 	userInfoModel.findOne({email : data.email}, function(err, users){
@@ -291,7 +302,7 @@ exports.sendMsgRoom = function(data, socket){
 				if(err) { return console.error('Failed to update'); }
 				console.log('Update Success');
 				var content = doc.Content,
-					idx = content[content.length-2].idx
+					idx = content.length-2 < 0 ? '' : content[content.length-2].idx;
 				var isDouble =  idx === userInd
 				console.log('idx', idx, userInd)
 				// data를 만들어서 클라이언트에게 보냄

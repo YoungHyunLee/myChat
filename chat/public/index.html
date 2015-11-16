@@ -9,8 +9,7 @@
 <link href="./css/common.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
-<div id="wrap">
-	
+<div id="wrap">	
 	<!-- 첫 페이지 -->
 	<section id='startPage' class="startPage on">
 		<header class="header">
@@ -147,8 +146,8 @@
 					<h2 class="lnbHeadText"><a href="./index.html">Friends</a></h2>
 				</div>	
 													
-				<button type=button class='searchFireBtn' title='검색창 열기'>
-					<span class="icon"></span>
+				<button id="friendSearchAreaBtn" type=button class='topMenuBtn friendSearchAreaBtn on' title='검색창 열기'>
+					<span class="glyphicon glyphicon-zoom-in"></span>
 				</button>				
 			</nav>
 			<!-- 검색영역 -->
@@ -159,7 +158,7 @@
 						<input type=search title='검색어 입력' placeholder="검색어 입력" class="searchField" />
 						<div class="searchBtnWrap">
 							<button type=submit class='searchBtn' title=검색하기>Search</button>	
-						</div>						
+						</div>
 					</fieldset>
 				</form>						
 			</aside>
@@ -176,27 +175,18 @@
 							<img src="../uploads/userUploadPicture/default.jpg" alt='내 프로필 사진'>
 						</div>
 						<div class="friendText">
-							<em class="name"></em>
-							<span class="statusMsg"></span>
+							<div class="tableCell">
+								<em class="name"></em>
+							</div>								
+							<div class="tableCell">
+								<span class="statusMsg"></span>
+							</div>								
 						</div>
 					</a>
 				</div>
 			</aside>
-			<ol class="friendsList">
-				<!--  친구목록 기본 마크업
-				<li class="friendList">
-					<a href="#">
-						<div class="friendImg">
-							<img src="./images/person1.jpg" />	
-						</div>
-						<div class="friendText">
-							<em class="name">박신혜</em>
-							<span class="statusMsg">김종석이랑 헤어지자.</span>
-						</div>
-					</a>		
-				</li>
-				-->
-			</ol>
+			<em class="groupTitle">친구</em>
+			<ol class="friendsList"></ol>
 		</section>
 		<!--// 친구 목록 -->
 		
@@ -246,13 +236,13 @@
 			<nav class="gnbBar">
 				<ul>
 					<li class="gnbList">
-						<button type=button class='gnbBtn friends'>친구</button>						
+						<button type=button class='gnbBtn friends' title="친구"><span class="glyphicon glyphicon-user"></span></button>						
 					</li>
 					<li class="gnbList">
-						<button type=button class='gnbBtn talkListArea'>채팅</button>						
+						<button type=button class='gnbBtn talkListArea' title="채팅"><span class="glyphicon glyphicon-envelope"></span></button>						
 					</li>
 					<li class="gnbList">
-						<button type=button class='gnbBtn more'>더보기</button>						
+						<button type=button class='gnbBtn more' title="더보기"><span class="glyphicon glyphicon-option-horizontal"></span></button>						
 					</li>
 				</ul>
 			</nav>
@@ -268,7 +258,7 @@
 		<a href=# class="popShadow"></a>
 		<div class="popContainer">			
 			<div class="profileBg">
-				<img src="../uploads/userUploadPicture/default.jpg" alt="개인 배경 이미지">
+				<img src="../uploads/userUploadPicture/default_bg.jpg" alt="개인 배경 이미지">
 			</div>
 			<div class="profileContent">
 				<div class="personalArea">
@@ -291,7 +281,43 @@
 			</footer>
 		</div>
 	</article>
-		
+	
+	<!-- 친구 찾기 -->
+	<article id='profilePop' class="layerPop friendSearch">
+		<a href=# class="popShadow"></a>
+		<div class="popContainer">
+			<header class="popHeader">
+				<em>사용자 ID(가입시 입력한 username)으로 검색하실 수 있습니다.</em>
+			</header>		
+			<div class="searchBar">
+				<form>
+					<fieldset>
+						<legend>친구 검색 영역. Numbernori's Chat에서 사용하신 username으로 검색하실 수 있습니다.</legend>						
+						<div class="input-group">
+					        <input type="search" class="form-control" placeholder="Numbernori's ID 검색">
+					        <span class="input-group-btn">
+					        	<button class="btn btn-default" type="submit">Search</button>
+					        </span>
+				        </div>
+					</fieldset>
+				</form>
+			</div>
+			<div class="searchResult">
+				<div class="friendList">
+					<a href="#">
+						<div class="friendImg">
+							<img src="./uploads/userUploadPicture/JSK.jpg">
+						</div>
+						<div class="friendText">
+							<em class="name">김종서</em>
+							<span class="statusMsg">나는 하루 종일 서있는다. 그래서 김종서다.</span>
+						</div>
+					</a>
+				</div>
+			</div>
+		</div>
+	</article>
+	
 	<!-- 로딩 바 -->
 	<article id='loadingBar' class="loadingBar">
 		<div class="shadow"></div>

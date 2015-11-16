@@ -7,7 +7,6 @@
  * 
  */
 
-
 /*
 documentFragment 사용법
 a = u.createDocumentFragment();
