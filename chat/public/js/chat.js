@@ -25,12 +25,13 @@ var g = (function(){
 		},
 		common : {			
 			on : function(a,b,c){
-				var _ieEvent = "on"+a;
+				var _ieEvent = "on"+a,
+					doc = document;
 				c ? c : false;
 				
-				if(document.addEventListener){
+				if(doc.addEventListener){
 					this.addEventListener(a,b,c);
-				} else if (document.attachEvent) {
+				} else if (doc.attachEvent) {
 					this.attachEvent(_ieEvent,b)
 				};
 				return false;
@@ -161,19 +162,20 @@ var g = (function(){
 		},
 		// 전체적인 init(front)
 		init : function(){
-			var _obj = this.obj;			
-			_obj.startPage = document.getElementById('startPage');
-			_obj.loadingBar = document.getElementById('loadingBar');
-			_obj.mainSection = document.getElementById('mainSection');
-			_obj.headArea = document.getElementById('headArea');
-			_obj.myInfoArea = document.getElementById('myInfoArea');
-			_obj.friendsArea = document.getElementById('friendsArea');
-			_obj.talkListArea = document.getElementById('talkListArea');
-			_obj.talkArea = document.getElementById('talkArea');
+			var _obj = this.obj,
+				doc = document;	
+			_obj.startPage = doc.getElementById('startPage');
+			_obj.loadingBar = doc.getElementById('loadingBar');
+			_obj.mainSection = doc.getElementById('mainSection');
+			_obj.headArea = doc.getElementById('headArea');
+			_obj.myInfoArea = doc.getElementById('myInfoArea');
+			_obj.friendsArea = doc.getElementById('friendsArea');
+			_obj.talkListArea = doc.getElementById('talkListArea');
+			_obj.talkArea = doc.getElementById('talkArea');
 			_obj.allTalkWrap = _obj.talkArea.firstElementChild;
-			_obj.waitArea = document.getElementsByClassName('waitArea');			
-			_obj.gnbArea = document.getElementById('gnbArea');
-			_obj.gnbAreaList = document.querySelectorAll('.gnbBtn');			
+			_obj.waitArea = doc.getElementsByClassName('waitArea');			
+			_obj.gnbArea = doc.getElementById('gnbArea');
+			_obj.gnbAreaList = doc.querySelectorAll('.gnbBtn');			
 			
 			all.global.init();
 			g.startPage.init();
@@ -188,8 +190,10 @@ var g = (function(){
 				//fbSignInBtn : null,
 				emailSignInBtn : null,
 				signUpBtn : null,
+				submitBtn : null,
+				signUpForm : null,
 				startPage : null,
-				friendsArea : null,			
+				friendsArea : null,	
 				helpBtn : null,
 				email_signUpPage : null,
 				email_loginPage : null,
@@ -200,18 +204,21 @@ var g = (function(){
 			},
 			init : function(){
 				var _this = this,
-					_obj = this.obj;
+					_obj = this.obj,
+					doc = document;
 					
 				// obj 객체 초기화
 				//_obj.fbSignInBtn = document.getElementById('fbSignIn');
-				_obj.emailSignInBtn = document.getElementById('emailSignIn');
-				_obj.signUpBtn = document.getElementById('signUp');
-				_obj.startPage = document.getElementById('startPage');
-				_obj.friendsWrap = document.getElementById('friendsArea');		
-				_obj.helpBtn = document.getElementById('help');	
-				_obj.email_signUpPage = document.getElementById('email_signUpPage');
+				_obj.emailSignInBtn = doc.getElementById('emailSignIn');
+				_obj.signUpBtn = doc.getElementById('signUp');
+				_obj.startPage = doc.getElementById('startPage');
+				_obj.friendsWrap = doc.getElementById('friendsArea');		
+				_obj.helpBtn = doc.getElementById('help');	
+				_obj.email_signUpPage = doc.getElementById('email_signUpPage');
+				_obj.email_signUpPageClose = _obj.email_signUpPage.getElementsByClassName('popClose')[0];
+				_obj.submitBtn = doc.getElementById('email_signUpSubmitBtn');	
+				_obj.signUpForm = doc.getElementById('signUpForm_email');
 							
-				
 				// 초기 객체 바인딩
 				/*
 				L(_obj.fbSignInBtn).on('click', function(){
@@ -231,44 +238,44 @@ var g = (function(){
 				});
 				L(_obj.signUpBtn).on('click', function(){
 					return _this.signUpPage();	
-				});		
-							
+				});						
+				L(_obj.email_signUpPageClose).on('click', function(){
+					return L(_obj.email_signUpPage).removeClass('on');
+				});					
+				
+				// 폼 이벤트 바인딩
+				L(_obj.submitBtn).on('click', function(e){
+					e.preventDefault();					
+					if(_obj.isSignUpPageSendServer){						
+						return cg.signUpPage.secondClick(e, _obj.signUpForm);
+					} else {
+						_obj.isSignUpPageSendServer = true;
+						return cg.signUpPage.sendServer(e, _obj.signUpForm, _obj.email_signUpPage);
+					}
+				}, false);
+				
 			},
 			// email 회원가입 페이지로 넘어갈 때
 			signUpPage : function(){
 				var _this = this,
-					_obj = this.obj,
-					_cg = cg;
-				
-				var submitBtn = document.getElementById('email_signUpSubmitBtn'),
-					signUpForm = document.getElementById('signUpForm_email');
+					_obj = this.obj;			
 								
 				L(_obj.email_signUpPage).addClass('on');
-								
-				// 폼 이벤트 바인딩
-				L(submitBtn).on('click', function(e){
-					e.preventDefault();					
-					if(_obj.isSignUpPageSendServer){						
-						return _cg.signUpPage.secondClick(e, signUpForm);
-					} else {
-						_obj.isSignUpPageSendServer = true;						
-						return _cg.signUpPage.sendServer(e, signUpForm, _obj.email_signUpPage);
-					}
-				}, false);
 				
 			},
 			// email에서 로그인 페이지로 넘어갈 때 사용.
 			loginPage_email : function(){
 				var _this = this,
 					_obj = this.obj,
+					doc = document,
 					_cg = cg;
 				
 				_obj.isLoginPage = true;
-				_obj.email_signInForm = document.getElementById('email_signInForm');	
-				_obj.email_loginPage = document.getElementById('email_loginPage');			
-				_obj.email_signInClose = document.getElementById('email_signInClose');
-				_obj.email_signInSubmitBtn = document.getElementById('email_signInSubmitBtn');
-				_obj.email_signInForgotPwBtn = document.getElementById('email_signInForgotPwBtn');
+				_obj.email_signInForm = doc.getElementById('email_signInForm');	
+				_obj.email_loginPage = doc.getElementById('email_loginPage');			
+				_obj.email_signInClose = doc.getElementById('email_signInClose');
+				_obj.email_signInSubmitBtn = doc.getElementById('email_signInSubmitBtn');
+				_obj.email_signInForgotPwBtn = doc.getElementById('email_signInForgotPwBtn');
 												
 				// 기본 동작.	
 				L(_obj.email_loginPage).addClass('on');
@@ -286,7 +293,7 @@ var g = (function(){
 				}, false);			
 				
 				L(_obj.email_signInForgotPwBtn).on('click', function(e){
-					alert('비밀번호 찾기 페이지는 준비중입니다.');
+					g.mainControl.alert('비밀번호 찾기 페이지는 준비중입니다.');
 				});
 				
 				L(_obj.email_signInClose).on('click', function(e){
@@ -305,7 +312,9 @@ var g = (function(){
 		},
 		// 친구목록, 대화목록, 더보기 등 기본 정의.
 		mainControl : {
-			obj : {				
+			obj : {
+				isFriendSearchInit : false,
+				isGnbInit : false,
 				startPage : null,
 				mainSection : null,
 				friendsArea : null,
@@ -322,8 +331,7 @@ var g = (function(){
 				_obj.mainSection = g.obj.mainSection;
 				_obj.friendsArea = g.obj.friendsArea;
 				_obj.talkArea = g.obj.talkArea;
-				_obj.friendList = document.querySelectorAll('#friendsArea .friendsList .friendList>a'); 
-				
+				_obj.friendList = document.querySelectorAll('#friendsArea .friendsList .friendList>a');				
 				
 				L(_obj.mainSection).addClass('on');				
 				L(_obj.startPage).removeClass('on');
@@ -332,11 +340,101 @@ var g = (function(){
 				g.friendsPage.init();
 				// 기본 이벤트 정의
 				
-				// gnb 
-				this.gnbControl.init();
-				
-				
-			}, 
+				// gnb & friendSearch				
+				_obj.isFriendSearchInit ? true : this.searchFriend.init();
+				_obj.isGnbInit ? true : this.gnbControl.init();				
+			},
+			searchFriend : {
+				obj : {
+					friendsArea : null,
+					friendSearchPopBtn : null,
+					friendSearchPop : null,
+					friendSearchInput : null,
+					friendSearchShadow : null,
+					friendSearchClose : null,
+					friendSearchBtn : null,
+					saveFriend : null
+				},
+				init : function(){
+					g.mainControl.obj.isFriendSearchInit = true;
+					var _obj = this.obj,
+					doc = document;
+					
+					for(var i in _obj){
+						g.obj[i] !== undefined ? _obj[i] = g.obj[i] : true;
+					};
+					_obj.friendSearchPopBtn = doc.getElementById('friendSearchPopBtn');
+					_obj.friendSearchPop = doc.getElementById('friendSearchPop');
+					_obj.friendSearchInput = doc.getElementById('friendSearchInput');					
+					_obj.friendSearchShadow = _obj.friendSearchPop.getElementsByClassName('popShadow')[0];
+					_obj.friendSearchClose = _obj.friendSearchPop.getElementsByClassName('popClose')[0];
+					_obj.friendSearchBtn = _obj.friendSearchPop.getElementsByClassName('friendSearchBtn')[0];
+					_obj.searchResult = _obj.friendSearchPop.getElementsByClassName('searchResult')[0];
+					_obj.saveFriend = _obj.friendSearchPop.getElementsByClassName('saveFriend')[0];
+										
+					// 기본 이벤트 바인딩.
+					L(_obj.friendSearchPopBtn).on('click', function(){
+						L(_obj.friendSearchPop).addClass('on');
+						_obj.friendSearchInput.value = '';
+						_obj.searchResult.innerHTML = '';
+					});					
+					L(_obj.friendSearchShadow).on('click', function(){
+						L(_obj.friendSearchPop).removeClass('on');
+					});
+					L(_obj.friendSearchClose).on('click', function(){
+						L(_obj.friendSearchPop).removeClass('on');
+					});
+					L(_obj.friendSearchBtn).on('click', function(e){
+						e.preventDefault();
+						cg.friendSearch.view(_obj.friendSearchInput.value);
+					});
+					L(_obj.searchResult).on('click', function(e){
+						e.preventDefault();
+						g.friendsPage.profileView(_obj.searchResult._data, false);
+						//_obj.searchResult._data.
+					});
+					L(_obj.saveFriend).on('click', function(){
+						cg.friendSearch.save(_obj.searchResult._data);
+					});
+				}, 
+				viewResult : function(data){						
+					var _obj = this.obj;
+					if(data == undefined){
+						_obj.searchResult._data = undefined;
+						_obj.searchResult.innerHTML = '';
+						return g.mainControl.alert("ID를 다시 확인해주세요!");
+					};
+					var profileMsg = data.profileMsg ? true : profileMsg = '';
+					var frag = 
+						'<div class="friendList">' +
+							'<div class="friendImg">' +
+								'<img src="./uploads/userUploadPicture/' + data.profilePic  + '">' +
+							'</div>' +
+							'<div class="friendText">' +
+								'<em class="name">' + data._myId + '</em>' +
+								'<span class="statusMsg">' + profileMsg + '</span>' +
+							'</div>' +
+						'</div>';
+					_obj.searchResult._data = data;
+					_obj.searchResult.innerHTML = frag;									
+				},
+				saveResult : function(data){				
+					var _obj = this.obj;					
+					console.log("친구 목록을 저장했다!", data);
+					if(data == undefined || data === false){
+						return g.mainControl.alert("이미 등록한 친구입니다.");
+					};
+					var _obj = this.obj,
+						li = document.createElement('li');
+					var temp = cg.friendsPage.friendsTemp(data.profilePic, data._myId, data.profileMsg);
+					li.innerHTML = temp;
+					li.className = 'friendList'
+					li._data = data;
+					_obj.friendsArea.getElementsByClassName('friendsList')[0].appendChild(li);					
+					
+					return L(_obj.friendSearchPop).removeClass('on');
+				}
+			},
 			gnbControl : {
 				obj : {				
 					mainSection : null,
@@ -344,6 +442,7 @@ var g = (function(){
 					headArea : null,
 					lnbTopMenuBtn : null,
 					lnbTopTalkPrevBtn : null,
+					friendSearchPopBtn : null,
 					lnbHeadText : null,
 					friendsArea : null,
 					talkArea : null,
@@ -353,15 +452,19 @@ var g = (function(){
 					gnbAreaList : null
 				},
 				init : function(){
+					g.mainControl.obj.isGnbInit = true;
 					var _main = this,
-					_obj = this.obj;
-					
+						_obj = this.obj,
+						doc = document;
+										
 					// obj 객체 초기화
 					for(var i in _obj){
 						g.obj[i] !== undefined ? _obj[i] = g.obj[i] : true;
 					};
-					_obj.lnbTopMenuBtn = document.getElementById('lnbTopMenuBtn');
-					_obj.lnbTopTalkPrevBtn = document.getElementById('lnbTopTalkPrevBtn');
+					_obj.lnbTopMenuBtn = doc.getElementById('lnbTopMenuBtn');
+					_obj.lnbTopTalkPrevBtn = doc.getElementById('lnbTopTalkPrevBtn');
+					_obj.friendSearchPopBtn = doc.getElementById('friendSearchPopBtn');
+					
 					_obj.lnbHeadText = _obj.headArea.getElementsByClassName('lnbHeadText')[0].children[0];
 					
 					
@@ -379,16 +482,17 @@ var g = (function(){
 							if(L(this).hasClass('friends')){
 								L(_obj.lnbHeadText).textContent = "Friends";
 								L(_obj.friendsArea).addClass('on');
-								
+								L(_obj.friendSearchPopBtn).addClass('on');
 								g.friendsPage.view();
 							} else if(L(this).hasClass('talkListArea')){
 								L(_obj.lnbHeadText).textContent = "Chating";	
 								L(_obj.talkListArea).addClass('on');
+								L(_obj.friendSearchPopBtn).removeClass('on');
 								
 								g.talkListAreaPage.view();
 							} else if(L(this).hasClass('more')){
 								L(_obj.lnbHeadText).textContent = "More";
-								alert('더보기 준비중입니다.')
+								g.mainControl.alert('더보기 준비중입니다.')
 							};
 							
 						}, false)
@@ -406,6 +510,9 @@ var g = (function(){
 					
 					//gnbAreaList
 				}
+			},
+			alert : function(data){
+				alert(data)
 			}
 		},	
 		// Friends 페이지 정의
@@ -419,6 +526,7 @@ var g = (function(){
 				profilePop : null, 
 				shadowLink : null,
 				profilePopClose : null,
+				talkUserBtn : null,
 				profileBg : null,
 				profilePic : null,
 				profileMyId : null				
@@ -426,15 +534,17 @@ var g = (function(){
 			init : function(){
 				var _this = this,
 					_obj = this.obj,
+					doc = document,
 					_cg = cg;					
 				// obj 객체 초기화			
 				_obj.mainSection = g.obj.mainSection;
 				_obj.friendsArea = g.obj.friendsArea;
 				_obj.talkArea = g.obj.talkArea;
 				_obj.friendList = _obj.friendsArea.querySelectorAll('.friendList>a'); 
-				_obj.profilePop = document.getElementById('profilePop');
+				_obj.profilePop = doc.getElementById('profilePop');
 				_obj.shadowLink = _obj.profilePop.firstElementChild;
-				_obj.profilePopClose = document.getElementById('profilePopClose');
+				_obj.profilePopClose = doc.getElementById('profilePopClose');
+				_obj.talkUserBtn = doc.getElementById('talkUserBtn');
 				_obj.profileBg = _obj.profilePop.querySelector('.profileBg img');
 				_obj.profilePic = _obj.profilePop.querySelector('.profilePic img');
 				_obj.profileMyId = _obj.profilePop.getElementsByClassName('profileMyId')[0];
@@ -462,19 +572,21 @@ var g = (function(){
 				};
 				
 				L(_obj.shadowLink).on('click', function(e){
+					_obj.profilePop._data = '';
 					L(_obj.profilePop).removeClass('on');
 				});
 				L(_obj.profilePopClose).on('click', function(e){
+					_obj.profilePop._data = '';
 					L(_obj.profilePop).removeClass('on');
+				});				
+				L(_obj.talkUserBtn).on('click', function(e){
+					var data = _obj.profilePop._data;
+					_this.createTalkRoom(data);
 				});
 			},
 			view : function(){
 				var _this = this,
-					_obj = this.obj
-				
-			},
-			// 친구 검색 이벤트시 사용
-			searchFriendEvent : function(){
+					_obj = this.obj;
 				
 			},
 			// 대화방으로 이동할 때 사용.
@@ -483,19 +595,23 @@ var g = (function(){
 			},
 			// 친구 또는 자신의 목록을 클릭했을 때 보여주는 프로필 팝업.
 			profileView : function(data, isMe){
+				console.log("프로필 팝업을 그린다!!", data, isMe);
 				var _this = this,
 					_obj = this.obj;
-				var picUrl = isMe ? data.profilePic : data.myProfilePic,
+				var picUrl = data.profilePic,
 					picBgUrl = data.profileBg ? data.profileBg : 'default_bg.jpg'; 
 								
 				_obj.profileBg.src = '../uploads/userUploadPicture/' + picBgUrl;
 				_obj.profilePic.src = '../uploads/userUploadPicture/' + picUrl;
 				_obj.profileMyId.innerHTML = data._myId;
 				
-				L(_obj.profilePop).addClass('on');
-				
-				
-				console.log(data , isMe)
+				L(_obj.profilePop).addClass('on');				
+				_obj.profilePop._data = data;
+			},
+			createTalkRoom : function(data){
+				var _this = this,
+					_obj = this.obj;
+				g.talkPage.createTalkRoom(data);
 			}
 			// 채팅방으로 넘어갈 때 사용.
 		},
@@ -564,6 +680,7 @@ var g = (function(){
 				sendBtn : null
 			},
 			init : function(){
+				if(this.obj.isView === false){return false;}
 				var _talk = this,
 					_obj = this.obj,
 					_cg = cg;			
@@ -620,6 +737,9 @@ var g = (function(){
 			prevTalkPage : function(){
 				var _obj = this.obj;
 				L(_obj.talkArea).removeClass('on');
+			},
+			createTalkRoom : function(data){
+				console.log('시자가가가가자작', data)
 			}
 		}
 		
@@ -679,8 +799,9 @@ var cg = {
 			*/
 			console.log('sendMsgOtherPeople의 메시지를 받았당');
 			var gObj = g.viewGlobal.obj,
-				roomEle = document.getElementById(data.userInfo.nowRoom),
-				frag = document.createDocumentFragment();
+				doc = document,
+				roomEle = doc.getElementById(data.userInfo.nowRoom),
+				frag = doc.createDocumentFragment();
 						
 			_this.talkPage.paintOnceMsg(frag, data.isDouble, '', data.userInfo.profilePic, data.userInfo._myId, data.textValue, data.date);	
 			
@@ -761,7 +882,7 @@ var cg = {
 			// 로딩 지우기.
 			L(g.viewGlobal.obj.loadingBar).removeClass('on');
 			
-			alert('아이디와 비밀번호를 다시 확인해주세요.')
+			g.viewGlobal.mainControl.alert('아이디와 비밀번호를 다시 확인해주세요.')
 		}
 	},
 	// 회원가입-email 페이지 정의
@@ -779,11 +900,11 @@ var cg = {
 			
 			socket.on('signUp_email_succ', function (data) {
 				console.log('회원가입 성공했당');
-				_this.signUpSucc(signUpPage);
+				_this.signUpSucc(signUpPage, data);
 			});
 			socket.on('signUp_email_fail', function (data) {
 				console.log('회원가입 실패했당');
-				_this.signUpFail(signUpPage);
+				_this.signUpFail(signUpPage, data);
 			});
 		},
 		secondClick : function(e, formObj){
@@ -797,14 +918,17 @@ var cg = {
 			
 			socket.emit('signUp_email', data);
 		},
-		signUpSucc : function(signUpPage){
-			console.log(signUpPage)
+		signUpSucc : function(signUpPage, data){
+			var doc = document;
+			console.log(signUpPage, data);
 			L(signUpPage).removeClass('on');
-			alert('회원가입이 완료되었습니다.\n 로그인을 해주세요!');
+			L(doc.getElementById('signInEmail_email')).value = data.email;
+			L(doc.getElementById('signInEmail_password')).value = data.password;
+			g.viewGlobal.mainControl.alert('회원가입이 완료되었습니다.\n 로그인을 해주세요!');
 		},
-		signUpFail : function(signUpPage){
+		signUpFail : function(signUpPage, data){
 			console.log(signUpPage)
-			alert('회원가입에 실패하였습니다.\n 이미 존재하거나, 잘못된 정보입니다. 확인해주세요!');
+			g.viewGlobal.mainControl.alert('회원가입에 실패하였습니다.\n 이미 존재하거나, 잘못된 정보입니다. 확인해주세요!');
 		}
 	},
 	// Friends 페이지 정의
@@ -838,7 +962,7 @@ var cg = {
 			var _this = this, 
 				_obj = this.obj;
 			console.log('내 프로필을 그립니당.data는', data);
-			
+						
 			var friendElement = this.friendsTemp(data.profilePic, data._myId, data.profileMsg);
 			_obj.myInfoArea.innerHTML = friendElement;
 			cg.userInfo.username = data.username;
@@ -848,34 +972,67 @@ var cg = {
 		},
 		paintMyFriends : function(data){			
 			console.log('친구 목록을 그립니당.data는', data);
-			var frag = document.createDocumentFragment(),
-				div = document.createElement('div');
+			var doc = document,
+				frag = doc.createDocumentFragment();
 			var friendOl = g.viewGlobal.obj.friendsArea.getElementsByClassName('friendsList')[0];
 			//친구 목록 그리기.
-			for(var i = 0, list = data.friendData, len = list.length, friendElement ; i < len ; i +=1){
-				friendElement = this.friendsTemp(list[i].myProfilePic, list[i]._myId, list[i].profileMsg);
-				div.innerHTML = friendElement;
-				div.lastChild._data = list[i];
-				frag.appendChild(div.lastChild);
+			for(var i = 0, list = data.friendData, len = list.length, friendElement, li ; i < len ; i +=1){
+				li = doc.createElement('li');
+				li.className = 'friendList';
+				friendElement = this.friendsTemp(list[i].profilePic, list[i]._myId, list[i].profileMsg);
+				li.innerHTML = friendElement;
+				li._data = list[i];
+				frag.appendChild(li);				
 			};
 			friendOl.appendChild(frag);
 		},
 		// 친구 목록 템플릿.
 		friendsTemp : function(picUrl, myId, profileMsg){
 			if(picUrl === undefined) picUrl = 'default.jpg';
+			profileMsg? true : profileMsg = '';
 			var temp = 
-				'<li class="friendList">' +
-					'<a href="#">' +
-						'<div class="friendImg">' +
-							'<img src="./uploads/userUploadPicture/' + picUrl +'">' +	
-						'</div>' +
-						'<div class="friendText">' +
-							'<em class="name">' + myId + '</em>' +
-							'<span class="statusMsg">' + profileMsg + '</span>' +
-						'</div>' +
-					'</a>' +
-				'</li>';
+				'<a href="#">' +
+					'<div class="friendImg">' +
+						'<img src="./uploads/userUploadPicture/' + picUrl +'">' +	
+					'</div>' +
+					'<div class="friendText">' +
+						'<em class="name">' + myId + '</em>' +
+						'<span class="statusMsg">' + profileMsg + '</span>' +
+					'</div>' +
+				'</a>';
 			return temp;
+		}
+	},
+	// 친구 목록 검색 
+	friendSearch :{
+		obj : {
+			isInit : false
+		},
+		init : function(){
+			this.obj.isInit = true;
+			// 친구 검색했을 때
+			socket.on('friendSearchResult', function(data){
+				console.log('친구 검색을 완료했다!!',data)
+				g.viewGlobal.mainControl.searchFriend.viewResult(data);
+			});
+			// 친구를 저장했을 때
+			socket.on('saveSearchFriendResult', function(data){
+				console.log('친구 검색을 완료했다!!',data)
+				g.viewGlobal.mainControl.searchFriend.saveResult(data);
+			});			
+		},
+		view : function(value){			
+			if(this.obj.isInit === false) this.init();
+			var searchValue = value + '';
+			socket.emit('friendSearch', searchValue);
+		}, 
+		save : function(data){
+			var myData = cg.userInfo;
+			var _data = {
+				data : data,
+				myData : myData
+			};
+			socket.emit('saveSearchFriend', _data);
 		}
 	},
 	// 대화 목록 페이지 정의
@@ -889,15 +1046,16 @@ var cg = {
 			// 초기 객체 바인딩.
 			var _this = this, 
 				_obj = this.obj,
+				doc = document,
 				_g = g.viewGlobal.obj;
 			for(var i in _obj){
 				 _g[i] !== undefined ? _obj[i] = _g[i] : true;
 			};
 			// 초기화 및 기존 대화 목록 초기화.
 			var talkListOl = _obj.talkListArea.children[0];
-			var frag = document.createDocumentFragment(),
-				talkFrag = document.createDocumentFragment();
-			var div = document.createElement('div');
+			var frag = doc.createDocumentFragment(),
+				talkFrag = doc.createDocumentFragment();
+			var div = doc.createElement('div');
 			talkListOl.innerHTML = '';
 			
 			for(var i = 0, list = data.talkMegData, len = list.length, content, ol, talkElement, roomList ; i < len ; i +=1){
@@ -919,11 +1077,12 @@ var cg = {
 		// 채팅 목록 뿌리기.(새로운 룸이 생기거나 초대를 받을 때 처리)
 		paintMyTalkList : function(data){
 			var _this = this,
-				_obj = this.obj;
+				_obj = this.obj,
+				doc = document;
 				
 			var talkListOl = g.viewGlobal.obj.talkListArea.children[0];
-			var frag = document.createDocumentFragment();
-			var div = document.createElement('div');
+			var frag = doc.createDocumentFragment();
+			var div = doc.createElement('div');
 			
 			for(var i = 0, list = data.talkMegData, len = list.length, content, ol, talkElement ; i < len ; i +=1){
 				content = list[i].Content;
@@ -1027,10 +1186,11 @@ var cg = {
 		paintTalkRoom : function(data, myObj){				
 			// 초기화 및 기존 채팅룸 초기화.
 			var _this = this, 
-				_obj = this.obj;
-			var talkRoomOl;
-			var frag = document.createDocumentFragment(),
-				div = document.createElement('div');
+				_obj = this.obj,
+				doc = document,
+				talkRoomOl,
+				frag = doc.createDocumentFragment(),
+				div = doc.createElement('div');
 			var userInfoArray = [],
 				myInd = 0,
 				initRoomObj;

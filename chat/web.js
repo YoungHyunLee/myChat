@@ -29,6 +29,7 @@ var db = mongoose.connection,
 db.once('open', function(){
 	console.log("db 연결!!")
 	
+	
 	// 회원가입 - email 스키마 생성
 	var signUpEmailSchema = new Schema({
 		username : String,
@@ -46,8 +47,9 @@ db.once('open', function(){
 		_myId : String, // 개인이 정할 수 있는 프로필값.
 		username : String,  // 변경할 수 없는 지정값
 		email : String,
-		myProfileMsg : String,
-		myProfilePic : String,
+		profileMsg : String,
+		profileBg : String,
+		profilePic : String,
 		friendsList : Array
 	});
 	// 그 스키마를 가진 모델 생성
@@ -79,7 +81,7 @@ db.once('open', function(){
 	// 그 스키마를 가진 모델 생성
 	var TalkMeg = mongoose.model('talkMegs', talkMegSchema);
 	global.talkMegModel = talkMegModel = TalkMeg;	
-	
+		
 	/*
 	var UserInfo1 = new UserInfo({
 		"_myId": "숫자놀이",
@@ -200,6 +202,16 @@ io.sockets.on('connection', function(socket){
 	*/
 	socket.on('signIn_email', function(data){
 		socketAdmin.loginCheck(data, socket)
+	});
+	
+	// 친구 목록을 검색했을 때
+	socket.on('friendSearch', function(data){
+		socketAdmin.searchFriend(data, socket)
+	});
+	
+	// 검색한 친구 목록을 저장할 때
+	socket.on('saveSearchFriend', function(data){
+		socketAdmin.saveSearchFriend(data, socket)
 	});
 	
 	// 대화 목록을 클릭했을 때 대화 내용 검색.

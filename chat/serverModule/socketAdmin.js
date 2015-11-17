@@ -36,7 +36,12 @@ exports.signUpEmail = function(data, socket){
 				signUpEmailSchema.save();
 				userInfoSchema.save();
 				
-				return socket.emit('signUp_email_succ');
+				var clientData = {
+					email : data.email,
+					password : data.password					
+				};
+				
+				return socket.emit('signUp_email_succ', clientData);
 			case 1 :
 				console.log('이미 존재하네요. 저장 안 함ㅋ')
 				return socket.emit('signUp_email_fail');
@@ -131,8 +136,9 @@ exports.roomInit = function(data, socket){
 		// 개인 유저의 친구들의 정보 & 나의 정보를 data 객체에 저장.
 		data._myId = users._myId;
 		data.username = users.username;
-		data.profilePic = users.myProfilePic;
-		data.profileMsg = users.myProfileMsg;
+		data.profilePic = users.profilePic;
+		data.profileBg = users.profileBg;
+		data.profileMsg = users.profileMsg;
 		
 		allData.data = data;
 		allData.friendData = users.friendsList;
@@ -189,6 +195,78 @@ exports.roomCreate = function(){
 	});
 	talkMegSchema.save();
 };
+exports.searchFriend = function(data, socket){
+	console.log("서버에서 friend 검색 요청을 받았당.", data);
+	var searchValue = data + '';
+	
+	userInfoModel.findOne({username : searchValue}, function(err, users){
+		if (err){return console.error(err);}
+		var data = {};
+		if(users === undefined || users === null){
+			return socket.emit('friendSearchResult', null);
+		};
+		
+		// 개인 유저의 친구들의 정보 & 나의 정보를 data 객체에 저장.
+		data._myId = users._myId;
+		data.username = users.username;
+		data.email = users.email;
+		data.profileMsg = users.profileMsg;
+		data.profileBg = users.profileBg;
+		data.profilePic = users.profilePic;
+				
+		// 검색한 데이터를 전송
+		socket.emit('friendSearchResult', data);
+	});	
+};
+
+exports.saveSearchFriend = function(data, socket){
+	console.log("서버에서 friend 저장 요청을 받았당.", data);
+	var myUsername = data.myData.username + '',
+		username = data.data.username + '';
+		
+	userInfoModel.find({username : {$in : [myUsername, username]}}, function(err, users){
+		// 존재하지 않는 데이터일 경우 return.
+		console.log(users)
+		var _data = {
+			myData : null,
+			searchData : null
+		}
+		// 자신의 친구 목록에 존재하면 return.
+		for(var i = 0, len = users.length ; i < len ; i += 1){
+			if(users[i].username === myUsername){
+				for(var j = 0, _list = users[i].friendsList, _len = _list.length ; j < _len ; j += 1){
+					if(_list[j] && _list[j].email === data.data.email){				
+						return socket.emit('saveSearchFriendResult', false);
+					};
+				};
+				_data.myData = users[i];
+				users[i+1] ? _data.searchData = users[i+1] : false;			
+				break;
+			} else {
+				_data.searchData = users[i];
+			};
+		};		
+		
+		var savingData = {};
+		savingData._myId = _data.searchData._myId;
+		savingData.email = _data.searchData.email;
+		savingData.profileMsg = _data.searchData.profileMsg;
+		savingData.profileBg = _data.searchData.profileBg;
+		savingData.profilePic = _data.searchData.profilePic;		
+		
+		userInfoModel.findOneAndUpdate(
+			{username : myUsername},
+			{$push: {friendsList : savingData}},
+			{upsert:true}, function(err, doc){
+				if (err){return console.error(err);}
+				// 저장한 데이터를 전송
+				socket.emit('saveSearchFriendResult', savingData);
+			}
+		);
+		
+	});
+};
+
 
 // 대화 목록을 클릭했을 때 대화 내용 검색.
 // 대화 목록의 Content 프로퍼티 안에는 idx라는 것을 사용하는데, idx 0인 값은 항상 방에서 먼저 대화한 사람을 기준으로 작성.
@@ -242,7 +320,7 @@ exports.searchContent = function(data, socket){
 			// 개인 유저의 친구들의 정보 & 나의 정보를 data 객체에 저장.
 			data._myId = users._myId;
 			data.username = users.username;
-			data.profilePic = users.myProfilePic;
+			data.profilePic = users.profilePic;
 			
 			allData.friendsData[ind] = data;
 			inter.allValue +=1;

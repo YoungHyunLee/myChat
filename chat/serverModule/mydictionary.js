@@ -37,8 +37,20 @@ testJs.test();
 global.test = 'testval';  
  */
 
-
-
+/*
+node에서 콘솔창에 보여주는 websocket writing의 숫자의미.
+var packets = exports.packets = {
+      'disconnect': 0
+    , 'connect': 1
+    , 'heartbeat': 2
+    , 'message': 3
+    , 'json': 4
+    , 'event': 5
+    , 'ack': 6
+    , 'error': 7
+    , 'noop': 8
+  }
+*/
 
 
 /*

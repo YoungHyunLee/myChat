@@ -118,12 +118,11 @@
 					</form>	
 				</div>
 			</article>
+			<a class="popClose" href="#" title="회원가입 창 닫기"><span class="glyphicon glyphicon-remove"></span></a>
 		</section>
 		<!--// 회원가입 페이지 - email -->
 	</section>
 	<!-- // 첫 페이지 -->
-	
-	
 	
 	<!-- 기본 컨텐츠 페이지 -->
 	<main id='mainSection' class="mainWrap">
@@ -146,7 +145,7 @@
 					<h2 class="lnbHeadText"><a href="./index.html">Friends</a></h2>
 				</div>	
 													
-				<button id="friendSearchAreaBtn" type=button class='topMenuBtn friendSearchAreaBtn on' title='검색창 열기'>
+				<button id="friendSearchPopBtn" type=button class='topMenuBtn friendSearchAreaBtn on' title='검색창 열기'>
 					<span class="glyphicon glyphicon-zoom-in"></span>
 				</button>				
 			</nav>
@@ -283,7 +282,7 @@
 	</article>
 	
 	<!-- 친구 찾기 -->
-	<article id='profilePop' class="layerPop friendSearch">
+	<article id='friendSearchPop' class="layerPop friendSearch">
 		<a href=# class="popShadow"></a>
 		<div class="popContainer">
 			<header class="popHeader">
@@ -294,27 +293,17 @@
 					<fieldset>
 						<legend>친구 검색 영역. Numbernori's Chat에서 사용하신 username으로 검색하실 수 있습니다.</legend>						
 						<div class="input-group">
-					        <input type="search" class="form-control" placeholder="Numbernori's ID 검색">
+					        <input id="friendSearchInput" type="search" class="form-control" placeholder="Numbernori's ID 검색">
 					        <span class="input-group-btn">
-					        	<button class="btn btn-default" type="submit">Search</button>
+					        	<button class="btn btn-default friendSearchBtn" type="submit">Search</button>
 					        </span>
 				        </div>
 					</fieldset>
 				</form>
 			</div>
-			<div class="searchResult">
-				<div class="friendList">
-					<a href="#">
-						<div class="friendImg">
-							<img src="./uploads/userUploadPicture/JSK.jpg">
-						</div>
-						<div class="friendText">
-							<em class="name">김종서</em>
-							<span class="statusMsg">나는 하루 종일 서있는다. 그래서 김종서다.</span>
-						</div>
-					</a>
-				</div>
-			</div>
+			<a class="searchResult"></a>
+			<button id='saveFriend' class="btn btn-sm btn-primary saveFriend" type="button">Save</button>
+			<a class="popClose" href="#" title="검색창 닫기"><span class="glyphicon glyphicon-remove"></span></a>
 		</div>
 	</article>
 	
