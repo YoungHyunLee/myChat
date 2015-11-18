@@ -41,51 +41,60 @@ var g = (function(){
 				var _tar = this,
 					_classSpace = " "+_a;
 				if(!_tar.className){
-					_tar.className = _a;
-					return this
+					//_tar.className = _a;
+					return this;
+				} else if(L(this).hasClass(_a)){
+					return this;
 				};
 				var _className = _tar.className,
-					_classText,_classSplit,_classLastAdd = false
+					_classText,_classSplit,_classLastAdd = false;
 				if(a && !!_tar.className){
 					_classSplit = _className.split(" ");
 					if(_classSplit.length === 1 && _classSplit[0] === _a){
-						return this
+						return this;
 					};			
-					_tar.className = ""
+					_tar.className = "";
 					for(var i=0,_ind = _classSplit.length;i<_ind;i+=1){
-						if(_classSplit[i] === _a){
-							continue;
-						}
-						if(i===0){
-							_tar.className = _classSplit[i]
-						} else {
-							_tar.className += (" " + _classSplit[i])
-						};			
+						if(_classSplit[i] === _a) continue;
+						switch (i === 0){
+							case true : 
+								_tar.className = _classSplit[i];
+							break;
+							case false : 
+								_tar.className += (" " + _classSplit[i]);
+							break;
+						};						
 					};
 					_tar.className += _classSpace;
 				};
 				
-				return this
+				return this;
 			},
 			removeClass : function(a){	
 				var a = arguments.length === 0 || typeof a === String ? a : String(a);
 				var _tar = this;
 				var _className = _tar.className,
 					_classText,_classSplit;
+				if(L(this).hasClass(a) === false){
+					return this;
+				};
 				if(a && _tar.className){
 					_classSplit = _className.split(" ");		
-					_tar.className = ""
+					_tar.className = "";
 					
 					for(var i=0,_ind = _classSplit.length;i<_ind;i+=1){
-						if(_classSplit[i] === a)continue;
-						if(i===0){
-							_tar.className += _classSplit[i]
-						} else {
-							_tar.className += (" " + _classSplit[i])
-						};			
+						if(_classSplit[i] === a) continue;
+						switch (i === 0){
+							case true : 
+								_tar.className += _classSplit[i];
+							break;
+							case false : 
+								_tar.className += (" " + _classSplit[i]);
+							break;
+						};
 					};		
 				};
-				return this	
+				return this;
 			}, 
 			hasClass : function(a){
 				var _a = arguments.length === 0 || typeof a === String ? a : String(a);
@@ -342,7 +351,8 @@ var g = (function(){
 				
 				// gnb & friendSearch				
 				_obj.isFriendSearchInit ? true : this.searchFriend.init();
-				_obj.isGnbInit ? true : this.gnbControl.init();				
+				_obj.isGnbInit ? true : this.gnbControl.init();
+				g.talkPage.init();
 			},
 			searchFriend : {
 				obj : {
@@ -436,7 +446,7 @@ var g = (function(){
 				}
 			},
 			gnbControl : {
-				obj : {				
+				obj : {
 					mainSection : null,
 					allTalkWrap : null,
 					headArea : null,
@@ -445,15 +455,18 @@ var g = (function(){
 					friendSearchPopBtn : null,
 					lnbHeadText : null,
 					friendsArea : null,
-					talkArea : null,
 					talkListArea : null,
+					talkArea : null,
 					waitArea : null,	
 					gnbArea : null,
-					gnbAreaList : null
+					gnbAreaList : null,
+					friendsFireBtn : null,
+					talkListFireBtn : null,
+					moreFireBtn : null
 				},
 				init : function(){
 					g.mainControl.obj.isGnbInit = true;
-					var _main = this,
+					var _this = this,
 						_obj = this.obj,
 						doc = document;
 										
@@ -464,51 +477,91 @@ var g = (function(){
 					_obj.lnbTopMenuBtn = doc.getElementById('lnbTopMenuBtn');
 					_obj.lnbTopTalkPrevBtn = doc.getElementById('lnbTopTalkPrevBtn');
 					_obj.friendSearchPopBtn = doc.getElementById('friendSearchPopBtn');
+					_obj.friendsFireBtn = doc.getElementById('friendsFireBtn');
+					_obj.talkListFireBtn = doc.getElementById('talkListFireBtn');
+					_obj.moreFireBtn = doc.getElementById('moreFireBtn');
 					
 					_obj.lnbHeadText = _obj.headArea.getElementsByClassName('lnbHeadText')[0].children[0];
 					
-					
 					// 이벤트 바인딩 - gnb 
-					for(var i = 0, list = _obj.gnbAreaList, len = list.length ; i < len ; i +=1){
-						L(_obj.gnbAreaList[i]).on('click', function(e){						
-							
-							L(_obj.gnbAreaList).removeClass('on');	
-							L(this).addClass('on');
-							
-							for(var i = 0, list = _obj.waitArea, len = list.length ; i < len ; i +=1){
-								L(_obj.waitArea[i]).removeClass('on');								
-							};
-							
-							if(L(this).hasClass('friends')){
-								L(_obj.lnbHeadText).textContent = "Friends";
-								L(_obj.friendsArea).addClass('on');
-								L(_obj.friendSearchPopBtn).addClass('on');
-								g.friendsPage.view();
-							} else if(L(this).hasClass('talkListArea')){
-								L(_obj.lnbHeadText).textContent = "Chating";	
-								L(_obj.talkListArea).addClass('on');
-								L(_obj.friendSearchPopBtn).removeClass('on');
-								
-								g.talkListAreaPage.view();
-							} else if(L(this).hasClass('more')){
-								L(_obj.lnbHeadText).textContent = "More";
-								g.mainControl.alert('더보기 준비중입니다.')
-							};
-							
-						}, false)
-					}
+					L(_obj.friendsFireBtn).on('click', function(e){
+						_this.friendsPage(e);
+					});
+					L(_obj.talkListFireBtn).on('click', function(e){
+						_this.talkListArea(e);
+					});
+					L(_obj.moreFireBtn).on('click', function(e){
+						_this.morePage(e);
+					});
 					
 					// 이벤트 바인딩 - lnb
 					L(_obj.lnbTopTalkPrevBtn).on('click', function(){
+						var nowRoom = cg.userInfo.nowRoom,
+							listOn = _obj.allTalkWrap.getElementsByClassName('allTalkList on')[0];
+							
 						cg.userInfo.nowRoom = null;
 						L(_obj.lnbHeadText).textContent = "Chating";	
 						L(_obj.lnbTopTalkPrevBtn).removeClass('on');
 						L(_obj.lnbTopMenuBtn).addClass('on');
-						L(_obj.allTalkWrap.getElementsByClassName('allTalkList on')[0]).removeClass('on');
+						
+						if(nowRoom === null){
+							_obj.allTalkWrap.removeChild(listOn);
+						} else {
+							L(listOn).removeClass('on');
+						};						
 						g.talkPage.prevTalkPage();
-					});
+					});					
+				},
+				friendsPage : function(e){
+					var _this = this,
+						_obj = this.obj;
+						
+					for(var i = 0, list = _obj.waitArea, len = list.length ; i < len ; i +=1){
+						L(_obj.waitArea[i]).removeClass('on');								
+					};
 					
-					//gnbAreaList
+					L(_obj.lnbHeadText).textContent = "Friends";
+					L(_obj.friendsArea).addClass('on');
+					L(_obj.friendSearchPopBtn).addClass('on');
+					
+					L(_obj.talkListFireBtn).removeClass('on');
+					L(_obj.moreFireBtn).removeClass('on');
+					L(_obj.friendsFireBtn).addClass('on');
+					
+					g.friendsPage.view();
+				},
+				talkListArea : function(e){
+					var _this = this,
+						_obj = this.obj;
+						
+					for(var i = 0, list = _obj.waitArea, len = list.length ; i < len ; i +=1){
+						L(_obj.waitArea[i]).removeClass('on');								
+					};
+					
+					L(_obj.lnbHeadText).textContent = "Chating";	
+					L(_obj.talkListArea).addClass('on');
+					L(_obj.friendSearchPopBtn).removeClass('on');
+					
+					L(_obj.friendsFireBtn).removeClass('on');
+					L(_obj.moreFireBtn).removeClass('on');
+					L(_obj.talkListFireBtn).addClass('on');
+					
+					g.talkListAreaPage.view();
+				},
+				morePage : function(e){
+					var _this = this,
+						_obj = this.obj;
+						
+					for(var i = 0, list = _obj.waitArea, len = list.length ; i < len ; i +=1){
+						L(_obj.waitArea[i]).removeClass('on');								
+					};
+					
+					L(_obj.lnbHeadText).textContent = "More";
+					L(_obj.friendsFireBtn).removeClass('on');
+					L(_obj.talkListFireBtn).removeClass('on');
+					L(_obj.moreFireBtn).addClass('on');
+										
+					g.mainControl.alert('더보기 준비중입니다.');					
 				}
 			},
 			alert : function(data){
@@ -520,10 +573,14 @@ var g = (function(){
 			obj : {
 				isInit : false,
 				mainSection : null,
+				lnbTopMenuBtn : null,
+				lnbTopTalkPrevBtn : null,
+				friendSearchPopBtn : null,
+				lnbHeadText : null,
 				friendsArea : null,
 				talkArea : null,
 				friendList : null,
-				profilePop : null, 
+				profilePop : null,
 				shadowLink : null,
 				profilePopClose : null,
 				talkUserBtn : null,
@@ -535,7 +592,12 @@ var g = (function(){
 				var _this = this,
 					_obj = this.obj,
 					doc = document,
-					_cg = cg;					
+					_cg = cg;
+														
+				// obj 객체 초기화
+				for(var i in _obj){
+					g.obj[i] !== undefined ? _obj[i] = g.obj[i] : true;
+				};					
 				// obj 객체 초기화			
 				_obj.mainSection = g.obj.mainSection;
 				_obj.friendsArea = g.obj.friendsArea;
@@ -552,8 +614,6 @@ var g = (function(){
 				_cg.friendsPage.obj = _obj;
 				
 				// 화면 정의.
-				
-				
 				
 				// 초기 객체 바인딩
 				for(var i =0, list = _obj.friendList, len = list.length ; i < len ; i +=1){
@@ -673,6 +733,10 @@ var g = (function(){
 				allTalkWrap : null,
 				talkScrollArea : null,				
 				headArea : null,
+				lnbTopMenuBtn : null,
+				lnbTopTalkPrevBtn : null,
+				friendSearchPopBtn : null,
+				lnbHeadText : null,
 				// 메시지 전송영역
 				sendMsgForm : null,
 				textInput : null,
@@ -680,38 +744,38 @@ var g = (function(){
 				sendBtn : null
 			},
 			init : function(){
-				if(this.obj.isView === false){return false;}
+				if(this.obj.isView === true){return false;}
+				this.obj.isView = true;
 				var _talk = this,
 					_obj = this.obj,
-					_cg = cg;			
-				// obj 객체 초기화
-				_obj.isView = true;				
+					_cg = cg,
+					gnbObj = g.mainControl.gnbControl.obj;
+				// obj 객체 초기화				
 				for(var i in _obj){
-					 g.obj[i] !== undefined ? _obj[i] = g.obj[i] : true;
+					gnbObj[i] !== undefined ? _obj[i] = gnbObj[i] : true;
+				};
+				for(var i in _obj){
+					g.obj[i] !== undefined ? _obj[i] = g.obj[i] : true;
 				};
 				//_cg.talkPage.obj = _obj;
 				//_cg.talkPage.init();
 			},
 			// 각 사람들의 대화 목록 페이지 호출.
-			view : function(e){				
+			view : function(e){
 				var _obj = this.obj;
 				if(_obj.isView === false) this.init();
-								 
-				var leftOnBtn = _obj.headArea.getElementsByClassName('topMenuBtn on')[0];
-				var leftPrevBtn = _obj.headArea.getElementsByClassName('topMenuBtn prev')[0];
-				var headText =  _obj.headArea.querySelector('.lnbHeadText a');
 				
-				L(leftOnBtn).removeClass('on');
-				L(leftPrevBtn).addClass('on');
-				headText.textContent = "대화중";
+				L(_obj.lnbTopMenuBtn).removeClass('on');
+				L(_obj.lnbTopTalkPrevBtn).addClass('on');
+				_obj.lnbHeadText.textContent = "대화중";
 				// 대화창 보여주기.
 				L(_obj.talkArea).addClass('on');
-								
+				
 				for(var ele = e.target, _thisEle, ind ;;){
 					_thisEle = L(ele).hasClass('friendList');
 					if(_thisEle === false){
-						ele = ele.parentNode;					
-					} else {						
+						ele = ele.parentNode;
+					} else {
 						ind = L(ele).index();
 						cg.userInfo.nowRoom = L(ele)._roomname;
 						cg.talkPage.searchTalkRoom(ind);
@@ -726,7 +790,7 @@ var g = (function(){
 				_obj.emoticon = _obj.sendMsgForm.elements.emoticon;
 				_obj.sendBtn = _obj.sendMsgForm.elements.sendBtn;
 				
-				// 이벤트 중에서 chat.js로 넘겨서 서버로 보낼 이벤트 체크.
+				// 서버로 보낼 이벤트 체크.
 				L(_obj.sendBtn).on('click', function(e){
 					e.preventDefault();		
 					// _cg에게 obj 객체를 보내고
@@ -738,8 +802,40 @@ var g = (function(){
 				var _obj = this.obj;
 				L(_obj.talkArea).removeClass('on');
 			},
-			createTalkRoom : function(data){
-				console.log('시자가가가가자작', data)
+			createTalkRoom : function(data){				
+				var _obj = this.obj;
+				
+				var div = document.createElement('div'),
+					allTalkWrap = this.obj.allTalkWrap,
+					profilePop = g.friendsPage.obj.profilePop,					
+					selectTalkList, roomList;
+				// 기본 템플릿 뿌리기
+				roomList = cg.talkPage.talkRoomTemp();
+				div.innerHTML = roomList;
+				_obj.allTalkWrap.appendChild(div.firstChild);
+				
+				g.mainControl.gnbControl.talkListArea();
+				L(_obj.lnbTopMenuBtn).removeClass('on');
+				L(_obj.lnbTopTalkPrevBtn).addClass('on');
+				_obj.lnbHeadText.textContent = "대화중";
+				
+				L(allTalkWrap.lastChild).addClass('on');
+				L(this.obj.talkArea).addClass('on');
+				L(profilePop).removeClass('on');
+				
+				selectTalkList = _obj.allTalkWrap.lastChild;				
+				// talkRoom event binding	
+				_obj.sendMsgForm = selectTalkList.getElementsByClassName('sendMsgForm')[0];
+				_obj.textInput = _obj.sendMsgForm.elements.textInput;
+				_obj.emoticon = _obj.sendMsgForm.elements.emoticon;
+				_obj.sendBtn = _obj.sendMsgForm.elements.sendBtn;
+				// 서버로 보낼 이벤트 체크.
+				L(_obj.sendBtn).on('click', function(e){
+					e.preventDefault();		
+					console.log("메시지 보냈당!")
+					// _cg에게 obj 객체를 보내고
+					cg.talkPage.sendMsg(_obj.sendMsgForm, ' me');					
+				}, false);
 			}
 		}
 		
@@ -1246,7 +1342,7 @@ var cg = {
 			L(initRoomObj).parentClassSearch('scrollArea').scrollTop = 99999;
 		},
 		// 채팅방 템플릿
-		talkRoomTemp : function(isMe, picUrl, myId, msg, date){			
+		talkRoomTemp : function(){			
 			var temp = 
 				 '<li class="allTalkList">' +
 					'<div class="scrollArea">' +
@@ -1272,7 +1368,11 @@ var cg = {
 				
 			return temp;
 		},
-		sendMsg : function(formObj){
+		sendMsg : function(formObj, isMyMsg){
+			if(this.obj.isInit === false){
+				this.obj.isInit = true;
+				this.init();
+			};
 			// obj 할당.
 			var _cg = cg,
 				fpObj = _cg.friendsPage.obj,
@@ -1284,12 +1384,20 @@ var cg = {
 				textValue : sendText				
 			};
 			// 서버로 전송.
-			socket.emit('sendMsg', data);	
+			//socket.emit('sendMsg', data);	
 			
 			// 서버에 넘긴 후 client는 사용자에게 바로 띄워줌.
 			var allTalkList = _obj.allTalkWrap.getElementsByClassName('allTalkList on')[0],
 				lastTalkList = allTalkList.getElementsByClassName('talkListArea')[0],
-				isMe =  L(lastTalkList.lastChild).hasClass('me') ? ' me' : '';
+				isMe;
+				
+				if(lastTalkList.lastChild && L(lastTalkList.lastChild).hasClass('me')){
+					isMe = ' me'
+				} else if(isMyMsg){
+					data.isMe = ' me'
+				} else {
+					isMe = '';
+				};
 			
 			this.paintMyMsg(lastTalkList, isMe, sendText, _cg.userInfo);
 		},
@@ -1312,6 +1420,7 @@ var cg = {
 				//obj.parentNode.scrollTop = 99999;			
 			} else {
 				// 그 외의 시나리오.
+				if(data.isMe){isMe = data.isMe;}
 				var myTalk = '';
 				if(isMe !== ' me'){
 					myTalk = 						
@@ -1354,7 +1463,7 @@ var cg = {
 				if(isMe !== ' me'){
 					myTalk = 						
 						'<div class="talkFriendImg">' +
-							'<img src="../uploads/userUploadPicture/' + picUrl + '" alt ="사용자 프로필 사진">' +
+							'<img src="../uploads/userUploadPicture/' + data.profilePic + '" alt ="사용자 프로필 사진">' +
 						'</div>';
 				};
 				// 상대가 쓴 글이 마지막일 경우
