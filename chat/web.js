@@ -50,6 +50,8 @@ db.once('open', function(){
 		profileMsg : String,
 		profileBg : String,
 		profilePic : String,
+		lastRoomIndex : String,
+		socketId : String,
 		friendsList : Array
 	});
 	// 그 스키마를 가진 모델 생성
@@ -221,14 +223,18 @@ io.sockets.on('connection', function(socket){
 		
 	// 누군가가 메시지를 보냈을 때 사용.(룸 전용)
 	socket.on('sendMsg', function(data){
-		socketAdmin.sendMsgRoom(data, socket)
+		if(data.createInfo){
+			socketAdmin.newRoomCreate(data, socket);
+		} else {
+			socketAdmin.sendMsgRoom(data, socket);
+		}
 	});
 			
 	// 접속이 종료되면 trigger
   	socket.on('disconnect', function () {
   		for(var i = 0, list = socket.rooms, len = list.length; i < len ; i +=1){
-  			socket.leave(list[i]);
-  			console.log("접종!! ", socket.rooms)
+  			socket.leave(list[i].roomname);
+  			console.log("접종!! ", socket.rooms.roomname, socket.rooms.socketIds)
   		}
   		
   		io.sockets.emit('user disconnected');

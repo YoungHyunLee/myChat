@@ -641,7 +641,7 @@ var g = (function(){
 				});				
 				L(_obj.talkUserBtn).on('click', function(e){
 					var data = _obj.profilePop._data;
-					_this.createTalkRoom(data);
+					g.talkPage.createTalkRoom(data);
 				});
 			},
 			view : function(){
@@ -667,11 +667,6 @@ var g = (function(){
 				
 				L(_obj.profilePop).addClass('on');				
 				_obj.profilePop._data = data;
-			},
-			createTalkRoom : function(data){
-				var _this = this,
-					_obj = this.obj;
-				g.talkPage.createTalkRoom(data);
 			}
 			// 채팅방으로 넘어갈 때 사용.
 		},
@@ -812,6 +807,7 @@ var g = (function(){
 				// 기본 템플릿 뿌리기
 				roomList = cg.talkPage.talkRoomTemp();
 				div.innerHTML = roomList;
+				div.firstChild._data = data;
 				_obj.allTalkWrap.appendChild(div.firstChild);
 				
 				g.mainControl.gnbControl.talkListArea();
@@ -831,10 +827,12 @@ var g = (function(){
 				_obj.sendBtn = _obj.sendMsgForm.elements.sendBtn;
 				// 서버로 보낼 이벤트 체크.
 				L(_obj.sendBtn).on('click', function(e){
-					e.preventDefault();		
-					console.log("메시지 보냈당!")
+					e.preventDefault();
+					var otherData = _obj.allTalkWrap.lastChild._data;
+					var createInfo = otherData;
+					
 					// _cg에게 obj 객체를 보내고
-					cg.talkPage.sendMsg(_obj.sendMsgForm, ' me');					
+					cg.talkPage.sendMsg(_obj.sendMsgForm, createInfo);					
 				}, false);
 			}
 		}
@@ -1368,7 +1366,7 @@ var cg = {
 				
 			return temp;
 		},
-		sendMsg : function(formObj, isMyMsg){
+		sendMsg : function(formObj, createInfo){
 			if(this.obj.isInit === false){
 				this.obj.isInit = true;
 				this.init();
@@ -1381,10 +1379,12 @@ var cg = {
 				sendText = formObj.elements.textInput.value;
 			var data = {
 				userInfo : _cg.userInfo,
-				textValue : sendText				
+				textValue : sendText,
+				createInfo : createInfo,
+				isMe : null
 			};
 			// 서버로 전송.
-			//socket.emit('sendMsg', data);	
+			socket.emit('sendMsg', data);	
 			
 			// 서버에 넘긴 후 client는 사용자에게 바로 띄워줌.
 			var allTalkList = _obj.allTalkWrap.getElementsByClassName('allTalkList on')[0],
@@ -1393,13 +1393,13 @@ var cg = {
 				
 				if(lastTalkList.lastChild && L(lastTalkList.lastChild).hasClass('me')){
 					isMe = ' me'
-				} else if(isMyMsg){
+				} else if(createInfo){
 					data.isMe = ' me'
 				} else {
 					isMe = '';
 				};
 			
-			this.paintMyMsg(lastTalkList, isMe, sendText, _cg.userInfo);
+			this.paintMyMsg(lastTalkList, isMe, sendText, data);
 		},
 		paintOnceMsg : function(obj, isDouble, isMe, picUrl, _myId, talkCnt, date){
 			var div = document.createElement('div');
@@ -1420,7 +1420,6 @@ var cg = {
 				//obj.parentNode.scrollTop = 99999;			
 			} else {
 				// 그 외의 시나리오.
-				if(data.isMe){isMe = data.isMe;}
 				var myTalk = '';
 				if(isMe !== ' me'){
 					myTalk = 						
@@ -1458,12 +1457,13 @@ var cg = {
 					'</li>'
 				);
 				//obj.parentNode.scrollTop = 99999;
-			} else {
+			} else {				
+				if(data.isMe){isMe = data.isMe;}
 				var myTalk = '';
 				if(isMe !== ' me'){
 					myTalk = 						
 						'<div class="talkFriendImg">' +
-							'<img src="../uploads/userUploadPicture/' + data.profilePic + '" alt ="사용자 프로필 사진">' +
+							'<img src="../uploads/userUploadPicture/' + data.userInfo.profilePic + '" alt ="사용자 프로필 사진">' +
 						'</div>';
 				};
 				// 상대가 쓴 글이 마지막일 경우
@@ -1471,7 +1471,7 @@ var cg = {
 					'<li class="talkList' + isMe + '">' +
 						myTalk +
 						'<div class="talkTextArea">' +
-							'<em class="name">' + data._myId + '</em>' +
+							'<em class="name">' + data.userInfo._myId + '</em>' +
 							'<ol class="textTalkList">' +
 								'<li class="talkText">' +
 									'<span class="msg">' + talkCnt + '</span>' +
@@ -1480,6 +1480,7 @@ var cg = {
 						'</div>' + 
 					'</li>'
 				);			
+				
 				//obj.parentNode.scrollTop = 99999;
 			};
 		},

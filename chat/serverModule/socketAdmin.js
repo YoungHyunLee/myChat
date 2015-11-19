@@ -30,6 +30,7 @@ exports.signUpEmail = function(data, socket){
 					profileMsg : null,
 					profileBg : 'default_bg.jpg',
 					profilePic : 'default.jpg',
+					socketId : socket.id,
 					friendsList : []
 				});				
 				
@@ -69,9 +70,13 @@ exports.loginCheck = function(data, socket){
 				return socket.emit('signIn_email_fail');
 			case 1 :
 				// 성공했을 때 넘김.
-				console.log('성공');				
+				console.log('성공');
+				// socket.id 변경.
+				userInfoModel.update( {email:data.email}, {$set:{socketId:socket.id}}, {upsert:true}, function(err){
+					if(err) { return console.error('Failed to update'); }
+				});	
 				// 개인의 룸 초기화.
-				return exports.roomInit(data, socket)				
+				return exports.roomInit(data, socket)
 		};			
 	});
 };
@@ -142,6 +147,7 @@ exports.roomInit = function(data, socket){
 		
 		allData.data = data;
 		allData.friendData = users.friendsList;
+		allData.friendData.socketId = "";
 		
 		// 만든 데이터 저장.
 		return findTalkModelFunc();
@@ -159,7 +165,7 @@ exports.roomInit = function(data, socket){
 			for(var i = 0, list = findTalkRoom, len = list.length ; i < len ; i +=1){
 				roomData[i] = {};
 				roomData[i].roomname = list[i].roomname;
-				roomData[i].users = list[i].users
+				roomData[i].users = list[i].users;
 				roomData[i].Content = list[i].Content;
 				allData.talkMegData[i] = roomData[i];
 				//socket.join(list[i].roomname)
@@ -173,27 +179,112 @@ exports.roomInit = function(data, socket){
 };
 
 // 룸 가입하기.
-exports.joinRoom = function(){
-	
+exports.joinRoom = function(socket, roomname){
+	socket.join(roomname);
+	socket.rooms.push(roomname);
 };
 
-
-exports.roomCreate = function(){
-	
-	var talkMegSchema = new talkMegModel({
-		roomname : String,
-		users : Array,
+exports.newRoomCreate = function(data, socket){
+	var nowDate = new Date();
+	/*
+	var data = {
+		userInfo : _cg.userInfo,
+				userInfo : {
+					username : null,
+					profilePic : null,
+					_myId : null,
+					profileMsg : null,
+					nowRoom :null
+				},
+		
+		textValue : sendText,
+		createInfo : createInfo,
+			{
+				profilePic: "default.jpg", 
+				profileBg: "default_bg.jpg", 
+				profileMsg: null, 
+				email: "shp@gmail.com", 
+				_myId: "박신혜"
+			}
+		isMe : null
+	};
+	*/
+	var allData = {
+		roomname : data.userInfo.username,
+		users : [
+			data.userInfo.username,
+			data.createInfo.username
+		],
 		Content : [
 			{
-				_id : 0,
-				idx : Number,
-				date : String,
-				talkCnt : String
+				idx : null,
+				date : {
+					year : nowDate.getFullYear(),
+					month : nowDate.getMonth(),
+					date : nowDate.getDate(), 
+					day : nowDate.getDay(),
+					hours : nowDate.getHours(),
+					minutes : nowDate.getMinutes(),
+					seconds : nowDate.getSeconds()
+				},
+				talkCnt : data.textValue
 			}
 		],
-		lastIndex : Object // 객체의 프로퍼티로 id, 값에 마지막에 본 숫자.
+		lastIndex : {}
+	};
+	// lastIndex 추가용.
+	for(var i = 0, list = allData.users, len = list.length ; i < len ; i += 1){
+		allData.lastIndex[list[i]] = 0;
+	};
+	// 개인정보에 해당하는 모델을 읽음. 친구목록 뿌리기.
+	userInfoModel.findOne({username : data.userInfo.username}, function(err, searchUser){
+		if (err){ return console.error(err);}
+		console.log(searchUser)
+		var roomIndex = 0;
+		if(searchUser.lastRoomIndex && searchUser.lastRoomIndex >=0){
+			roomIndex = searchUser.lastRoomIndex + 1
+		};
+		var newRoomName = allData.roomname + '_' + roomIndex;
+		
+		// db에 room을 생성하고, join까지 시킴.
+		exports.roomCreate(socket, newRoomName, allData.users, allData.Content, allData.lastIndex);
+				
+    	for(var i = 0, list = searchUser.friendsList, len = list.length ; i < len ; i += 1){
+    		// 내가 대화방을 만들려는 사람과 일치할 때
+    		if(list[i].email === data.createInfo.email){
+    			socket.broadcast.to(list[i].socketId).join(newRoomName);
+    			//socket.broadcast.to(newRoomName).emit('sendMsgOtherPeople', _data);
+    			console.log("room 가입했다!!!", newRoomName, list[i].socketId, socket.rooms)
+    		};
+    	};
+				
+	});
+}
+
+exports.roomCreate = function(socket, roomname, users, content, lastIndex){	
+	var talkMegSchema = new talkMegModel({
+		roomname : roomname,
+		users : users,
+		Content : [
+			{
+				idx : content.idx,
+				date : {
+					year : content.year,
+					month : content.month,
+					date : content.date,
+					day : content.day,
+					hours : content.hours,
+					minutes : content.minutes,
+					seconds : content.seconds
+				},
+				talkCnt : content.talkCnt
+			}
+		],
+		lastIndex : lastIndex // 객체의 프로퍼티로 id, 값에 마지막에 본 숫자.
 	});
 	talkMegSchema.save();
+	socket.rooms.push(roomname);
+	return socket.join(roomname);
 };
 exports.searchFriend = function(data, socket){
 	console.log("서버에서 friend 검색 요청을 받았당.", data);
@@ -252,7 +343,9 @@ exports.saveSearchFriend = function(data, socket){
 		savingData.email = _data.searchData.email;
 		savingData.profileMsg = _data.searchData.profileMsg;
 		savingData.profileBg = _data.searchData.profileBg;
-		savingData.profilePic = _data.searchData.profilePic;		
+		savingData.profilePic = _data.searchData.profilePic;
+		savingData.username = _data.searchData.username;
+		savingData.socketId = _data.searchData.socketId;
 		
 		userInfoModel.findOneAndUpdate(
 			{username : myUsername},
@@ -260,6 +353,7 @@ exports.saveSearchFriend = function(data, socket){
 			{upsert:true}, function(err, doc){
 				if (err){return console.error(err);}
 				// 저장한 데이터를 전송
+				savingData.socketId = '';
 				socket.emit('saveSearchFriendResult', savingData);
 			}
 		);
