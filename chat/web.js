@@ -153,7 +153,12 @@ db.once('open', function(){
 	});
 	UserInfo2.save();	
 	*/
-		
+	userInfoModel.find({friendsList : { username : "박신혜"}},  function(err, doc){
+		if (err){return console.error(err);}
+		"여기서 friendsList안의 username에 있는 사람을 찾아보자."
+		console.log(doc)
+	});
+	
 });
 
 

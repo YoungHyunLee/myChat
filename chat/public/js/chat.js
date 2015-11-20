@@ -889,9 +889,9 @@ var cg = {
 					profileMsg: "핑크는 핑크핑크해!!"
 					profilePic: "person1.jpg"
 					username: "숫자놀이"
-		 		},
+		 		}
 			*/
-			console.log('sendMsgOtherPeople의 메시지를 받았당');
+			console.log('sendMsgOtherPeople의 메시지를 받았당. data는', data);
 			var gObj = g.viewGlobal.obj,
 				doc = document,
 				roomEle = doc.getElementById(data.userInfo.nowRoom),
@@ -899,11 +899,10 @@ var cg = {
 						
 			_this.talkPage.paintOnceMsg(frag, data.isDouble, '', data.userInfo.profilePic, data.userInfo._myId, data.textValue, data.date);	
 			
-			
 			/*
 			 var div = document.createElement('div');
 			div.innerHTML = talkElement.temp;
-			 * */
+			 */
 			var obj = gObj.allTalkWrap.eq(L(roomEle).index());
 			if(data.isDouble){
 				obj.getElementsByClassName('talkListArea')[0].lastChild.getElementsByClassName('textTalkList')[0].appendChild(frag);
@@ -911,8 +910,7 @@ var cg = {
 			} else {
 				obj.getElementsByClassName('talkListArea')[0].appendChild(frag);
 				obj.lastChild.srcollTop = 99999;
-			}
-			
+			};			
 			
 			// paintOnceMsg : function(obj, isDouble, isMe, picUrl, _myId, talkCnt, date){
 			// return {obj : obj, temp : temp}

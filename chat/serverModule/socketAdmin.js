@@ -134,6 +134,19 @@ exports.roomInit = function(data, socket){
 			}
 	};
 	// 개인정보에 해당하는 모델을 읽음. 친구목록 뿌리기.
+	
+	/*
+	userInfoModel.findAndUpdate(
+		{username : myUsername},
+		{$push: {friendsList : savingData}},
+		{upsert:true}, function(err, doc){
+			if (err){return console.error(err);}
+			// 저장한 데이터를 전송
+			savingData.socketId = '';
+			socket.emit('saveSearchFriendResult', savingData);
+		}
+	);
+	*/
 	userInfoModel.findOne({email : data.email}, function(err, users){
 		if (err){ return console.error(err);}
 		var data = {};
@@ -157,7 +170,7 @@ exports.roomInit = function(data, socket){
 	function findTalkModelFunc(){
 		var talkMegSearchQuery = allData.data.username,
 			roomData = [];
-			
+		
 		talkMegModel.find({users : talkMegSearchQuery}, function(err, findTalkRoom){
 			if (err){return console.error(err);}
 			socket.rooms = [];
@@ -217,7 +230,7 @@ exports.newRoomCreate = function(data, socket){
 		],
 		Content : [
 			{
-				idx : null,
+				idx : 0,
 				date : {
 					year : nowDate.getFullYear(),
 					month : nowDate.getMonth(),
@@ -232,6 +245,12 @@ exports.newRoomCreate = function(data, socket){
 		],
 		lastIndex : {}
 	};
+	var _data = {
+		userInfo : data.userInfo,
+		textValue : data.textValue,
+		date : allData.Content[0].date,
+		isDouble : false
+	};
 	// lastIndex 추가용.
 	for(var i = 0, list = allData.users, len = list.length ; i < len ; i += 1){
 		allData.lastIndex[list[i]] = 0;
@@ -239,29 +258,32 @@ exports.newRoomCreate = function(data, socket){
 	// 개인정보에 해당하는 모델을 읽음. 친구목록 뿌리기.
 	userInfoModel.findOne({username : data.userInfo.username}, function(err, searchUser){
 		if (err){ return console.error(err);}
-		console.log(searchUser)
-		var roomIndex = 0;
+		
+		var roomIndex = 0, newRoomName;
 		if(searchUser.lastRoomIndex && searchUser.lastRoomIndex >=0){
 			roomIndex = searchUser.lastRoomIndex + 1
 		};
-		var newRoomName = allData.roomname + '_' + roomIndex;
+		newRoomName = allData.roomname + '_' + roomIndex;
 		
-		// db에 room을 생성하고, join까지 시킴.
-		exports.roomCreate(socket, newRoomName, allData.users, allData.Content, allData.lastIndex);
+		// db에 room을 생성하고, 나를 join 시킴.
+		exports.roomCreate(socket, newRoomName, allData.users, allData.Content[0], allData.lastIndex);
 				
     	for(var i = 0, list = searchUser.friendsList, len = list.length ; i < len ; i += 1){
     		// 내가 대화방을 만들려는 사람과 일치할 때
     		if(list[i].email === data.createInfo.email){
-    			socket.broadcast.to(list[i].socketId).join(newRoomName);
-    			//socket.broadcast.to(newRoomName).emit('sendMsgOtherPeople', _data);
-    			console.log("room 가입했다!!!", newRoomName, list[i].socketId, socket.rooms)
+    			//console.log("room 가입했다!!!", newRoomName, list[i].socketId, socket.rooms);
+    			// socket.id에 해당하는 그 사람에게 room을 가입시킴.
+    			socket.broadcast.to(list[i].socketId).join(newRoomName);	
+    			console.log("room 가입했다!!!", newRoomName, list[i].socketId, socket.rooms);		
+    			 
+    			socket.broadcast.to(newRoomName).emit('sendMsgOtherPeople', _data);    			
     		};
     	};
 				
 	});
 }
 
-exports.roomCreate = function(socket, roomname, users, content, lastIndex){	
+exports.roomCreate = function(socket, roomname, users, content, lastIndex){
 	var talkMegSchema = new talkMegModel({
 		roomname : roomname,
 		users : users,
@@ -282,6 +304,7 @@ exports.roomCreate = function(socket, roomname, users, content, lastIndex){
 		],
 		lastIndex : lastIndex // 객체의 프로퍼티로 id, 값에 마지막에 본 숫자.
 	});
+	console.log(talkMegSchema)
 	talkMegSchema.save();
 	socket.rooms.push(roomname);
 	return socket.join(roomname);
@@ -446,7 +469,7 @@ exports.sendMsgRoom = function(data, socket){
 	talkMegModel.find({roomname : data.userInfo.nowRoom}, function(err, findTalkCentent){
 		var userInd,
 			content = findTalkCentent[0].Content;
-		for(var i = 0, list = findTalkCentent[0]["users"], len = list.length ; i < len ; i +=1){		
+		for(var i = 0, list = findTalkCentent[0]["users"], len = list.length ; i < len ; i +=1){
 			if(list[i] === data.userInfo.username){
 				userInd = i;
 				break;
@@ -475,7 +498,7 @@ exports.sendMsgRoom = function(data, socket){
 				console.log('Update Success');
 				var content = doc.Content,
 					idx = content.length-2 < 0 ? '' : content[content.length-2].idx;
-				var isDouble =  idx === userInd
+				var isDouble =  idx === userInd;
 				console.log('idx', idx, userInd)
 				// data를 만들어서 클라이언트에게 보냄
 				var _data = {
