@@ -24,47 +24,52 @@ var Schema = mongoose.Schema,
 var db = mongoose.connection,
 	signUpEmailModel = null, // 회원가입시 저장하는 model
 	talkMegModel = null, // 채팅방에서 서로 대화한 것을 저장하는 model
-	userInfoModel = null // 개인 정보 model
+	userInfoModel = null; // 개인 정보 model
 // 첫 연결했을 때.
 db.once('open', function(){
 	console.log("db 연결!!")
-	
+		
+	// 개인 회원 정보 스키마 생성
+	var userInfoSchema = new Schema({
+		username : String,
+		email : String,
+		lastRoomIndex : Number,
+		friendsList : [{type : String, ref : 'signUpEmails'}],
+		talkMsgs : [{type : String, ref : 'talkMegs'}],
+		signUp : {type : String, ref : 'signUpEmails'}
+	});	
 	
 	// 회원가입 - email 스키마 생성
-	var signUpEmailSchema = new Schema({
+	var signUpSchema = new Schema({
+		_id : String,
 		username : String,
 		email : String,
 		password : String,
-		friends : Object,
-		talkList : Object		
-	});
-	// 그 스키마를 가진 모델 생성
-	var SignUpEmail = mongoose.model('signUpEmails', signUpEmailSchema);
-	global.signUpEmailModel = signUpEmailModel = SignUpEmail;
-	
-	// 개인 회원 정보 스키마 생성
-	var userInfoSchema = new Schema({
-		_myId : String, // 개인이 정할 수 있는 프로필값.
-		username : String,  // 변경할 수 없는 지정값
-		email : String,
+		_myId : String, // 개인이 정할 수 있는 프로필값.		
 		profileMsg : String,
 		profileBg : String,
 		profilePic : String,
-		lastRoomIndex : String,
-		socketId : String,
-		friendsList : Array
+		socketId : String
+		//friends : Object,
+		//talkList : Object
+		//fans : [{type : Number, ref : 'userInfos'}]
 	});
+	
+	// 그 스키마를 가진 모델 생성
+	var SignUpEmail = mongoose.model('signUpEmails', signUpSchema);
+	global.signUpEmailModel = signUpEmailModel = SignUpEmail;
+	
 	// 그 스키마를 가진 모델 생성
 	var UserInfo = mongoose.model('userInfos', userInfoSchema);
 	global.userInfoModel = userInfoModel = UserInfo;
-	
+		
 	// 대화방 스키마 생성
 	var talkMegSchema = new Schema({
+		_id : String,
 		roomname : String, // 룸 이름은 만든이의 이름 + '_' + lastIndex
 		users : Array,
 		Content : [
 			{
-				_id : 0,
 				idx : Number,
 				date : {
 					year : Number,
@@ -82,7 +87,7 @@ db.once('open', function(){
 	});
 	// 그 스키마를 가진 모델 생성
 	var TalkMeg = mongoose.model('talkMegs', talkMegSchema);
-	global.talkMegModel = talkMegModel = TalkMeg;	
+	global.talkMegModel = talkMegModel = TalkMeg;
 		
 	/*
 	var UserInfo1 = new UserInfo({
@@ -153,11 +158,6 @@ db.once('open', function(){
 	});
 	UserInfo2.save();	
 	*/
-	userInfoModel.find({friendsList : { username : "박신혜"}},  function(err, doc){
-		if (err){return console.error(err);}
-		"여기서 friendsList안의 username에 있는 사람을 찾아보자."
-		console.log(doc)
-	});
 	
 });
 
@@ -237,6 +237,8 @@ io.sockets.on('connection', function(socket){
 			
 	// 접속이 종료되면 trigger
   	socket.on('disconnect', function () {
+  		console.log('접속 종료 메서드 실행!!!.', socket.rooms);
+  		if(socket.rooms === undefined) return false;
   		for(var i = 0, list = socket.rooms, len = list.length; i < len ; i +=1){
   			socket.leave(list[i].roomname);
   			console.log("접종!! ", socket.rooms.roomname, socket.rooms.socketIds)

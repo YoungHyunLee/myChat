@@ -429,7 +429,7 @@ var g = (function(){
 					_obj.searchResult.innerHTML = frag;									
 				},
 				saveResult : function(data){				
-					var _obj = this.obj;					
+					var _obj = this.obj;
 					console.log("친구 목록을 저장했다!", data);
 					if(data == undefined || data === false){
 						return g.mainControl.alert("이미 등록한 친구입니다.");
@@ -828,11 +828,10 @@ var g = (function(){
 				// 서버로 보낼 이벤트 체크.
 				L(_obj.sendBtn).on('click', function(e){
 					e.preventDefault();
-					var otherData = _obj.allTalkWrap.lastChild._data;
-					var createInfo = otherData;
+					var otherData = _obj.allTalkWrap.lastChild._data.username;
 					
 					// _cg에게 obj 객체를 보내고
-					cg.talkPage.sendMsg(_obj.sendMsgForm, createInfo);					
+					cg.talkPage.sendMsg(_obj.sendMsgForm, otherData);					
 				}, false);
 			}
 		}
@@ -1378,7 +1377,7 @@ var cg = {
 			var data = {
 				userInfo : _cg.userInfo,
 				textValue : sendText,
-				createInfo : createInfo,
+				createInfo : [createInfo],
 				isMe : null
 			};
 			// 서버로 전송.

@@ -18,33 +18,37 @@ exports.signUpEmail = function(data, socket){
 				console.log('없으므로 저장합니다.');
 				// 여기에 지금 맞게 들어갔는지 체크는 하나도 없음. validation은 추후에 추가.
 				// 회원가입-email & 개인정보 저장
-				var signUpEmailSchema = new signUpEmailModel({
+				var signUpSchema = new signUpEmailModel({
+					_id : data.username,
 					username : data.username,
 					email : data.email,
-					password : data.password
-				});
-				var userInfoSchema = new userInfoModel({
+					password : data.password,
 					_myId : data.username,
-					username : data.username,	
-					email : data.email,	
 					profileMsg : null,
 					profileBg : 'default_bg.jpg',
 					profilePic : 'default.jpg',
-					socketId : socket.id,
-					friendsList : []
+					socketId : socket.id
+				});
+				var userInfoSchema = new userInfoModel({
+					username : data.username,
+					email : data.email,
+					lastRoomIndex : '',
+					friendsList : [],
+					signUp : data.username,
+					talkMsg : data.username
 				});				
-				
-				signUpEmailSchema.save();
+								
+				signUpSchema.save();
 				userInfoSchema.save();
 				
 				var clientData = {
 					email : data.email,
 					password : data.password					
-				};
-				
+				};	
+	
 				return socket.emit('signUp_email_succ', clientData);
 			case 1 :
-				console.log('이미 존재하네요. 저장 안 함ㅋ')
+				console.log('이미 존재하네요. 저장 안 함ㅋ');				
 				return socket.emit('signUp_email_fail');
 		};
 	});
@@ -80,7 +84,7 @@ exports.loginCheck = function(data, socket){
 		};			
 	});
 };
-
+// 개인 룸 초기화.
 exports.roomInit = function(data, socket){
 	/*
 	signUpEmailModel = null, // 회원가입시 저장하는 model
@@ -147,48 +151,44 @@ exports.roomInit = function(data, socket){
 		}
 	);
 	*/
-	userInfoModel.findOne({email : data.email}, function(err, users){
+	userInfoModel.findOne({email : data.email}).populate('signUp friendsList talkMsg').exec(function(err, users){
 		if (err){ return console.error(err);}
-		var data = {};
+		console.log('정보를 검색합니다.', users)
 		
+		var data = {},
+			signUp = users.signUp,
+			talkMsg = users.talkMsg;
+		console.log(talkMsg)
 		// 개인 유저의 친구들의 정보 & 나의 정보를 data 객체에 저장.
-		data._myId = users._myId;
-		data.username = users.username;
-		data.profilePic = users.profilePic;
-		data.profileBg = users.profileBg;
-		data.profileMsg = users.profileMsg;
+		data._myId = signUp._myId;
+		data.username = signUp.username;
+		data.profilePic = signUp.profilePic;
+		data.profileBg = signUp.profileBg;
+		data.profileMsg = signUp.profileMsg;
 		
 		allData.data = data;
 		allData.friendData = users.friendsList;
-		allData.friendData.socketId = "";
+		// 보안상 제거해야 하는 건지.. 아직은 의문.
+		//allData.friendData.socketId = "";
 		
 		// 만든 데이터 저장.
-		return findTalkModelFunc();
+		if(talkMsg === undefined){return socket.emit('signInEnd', allData);}
+		
+		socket.rooms = [];
+		for(var i = 0, list = talkMsg, len = list.length ; i < len ; i +=1){
+			roomData[i] = {};
+			roomData[i].roomname = list[i].roomname;
+			roomData[i].users = list[i].users;
+			roomData[i].Content = list[i].Content;
+			allData.talkMegData[i] = roomData[i];
+			//socket.join(list[i].roomname)
+			//console.log("ididiid", socket.id)
+			socket.join(list[i].roomname);
+			socket.rooms.push(list[i].roomname);
+		};
+		return socket.emit('signInEnd', allData);
 	});
 	
-	// 대화방에 해당하는 모델을 읽음.
-	function findTalkModelFunc(){
-		var talkMegSearchQuery = allData.data.username,
-			roomData = [];
-		
-		talkMegModel.find({users : talkMegSearchQuery}, function(err, findTalkRoom){
-			if (err){return console.error(err);}
-			socket.rooms = [];
-			
-			for(var i = 0, list = findTalkRoom, len = list.length ; i < len ; i +=1){
-				roomData[i] = {};
-				roomData[i].roomname = list[i].roomname;
-				roomData[i].users = list[i].users;
-				roomData[i].Content = list[i].Content;
-				allData.talkMegData[i] = roomData[i];
-				//socket.join(list[i].roomname)
-				//console.log("ididiid", socket.id)
-				socket.join(list[i].roomname);
-				socket.rooms.push(list[i].roomname);
-			};
-			return socket.emit('signInEnd', allData);
-		});
-	};
 };
 
 // 룸 가입하기.
@@ -199,6 +199,11 @@ exports.joinRoom = function(socket, roomname){
 
 exports.newRoomCreate = function(data, socket){
 	var nowDate = new Date();
+	console.log('newRoomCreate를 실행.', data);
+	
+	var allUsers = data.createInfo;
+	allUsers.unshift(data.userInfo.username);
+				
 	/*
 	var data = {
 		userInfo : _cg.userInfo,
@@ -211,23 +216,13 @@ exports.newRoomCreate = function(data, socket){
 				},
 		
 		textValue : sendText,
-		createInfo : createInfo,
-			{
-				profilePic: "default.jpg", 
-				profileBg: "default_bg.jpg", 
-				profileMsg: null, 
-				email: "shp@gmail.com", 
-				_myId: "박신혜"
-			}
+		createInfo : ["박신혜"],
 		isMe : null
 	};
 	*/
 	var allData = {
 		roomname : data.userInfo.username,
-		users : [
-			data.userInfo.username,
-			data.createInfo.username
-		],
+		users : allUsers,
 		Content : [
 			{
 				idx : 0,
@@ -256,8 +251,9 @@ exports.newRoomCreate = function(data, socket){
 		allData.lastIndex[list[i]] = 0;
 	};
 	// 개인정보에 해당하는 모델을 읽음. 친구목록 뿌리기.
-	userInfoModel.findOne({username : data.userInfo.username}, function(err, searchUser){
+	userInfoModel.findOne({username : data.userInfo.username}).populate('friendsList').exec(function(err, searchUser){		
 		if (err){ return console.error(err);}
+		console.log('개인정보 검색 후', searchUser, data)
 		
 		var roomIndex = 0, newRoomName;
 		if(searchUser.lastRoomIndex && searchUser.lastRoomIndex >=0){
@@ -268,65 +264,105 @@ exports.newRoomCreate = function(data, socket){
 		// db에 room을 생성하고, 나를 join 시킴.
 		exports.roomCreate(socket, newRoomName, allData.users, allData.Content[0], allData.lastIndex);
 				
-    	for(var i = 0, list = searchUser.friendsList, len = list.length ; i < len ; i += 1){
-    		// 내가 대화방을 만들려는 사람과 일치할 때
-    		if(list[i].email === data.createInfo.email){
-    			//console.log("room 가입했다!!!", newRoomName, list[i].socketId, socket.rooms);
-    			// socket.id에 해당하는 그 사람에게 room을 가입시킴.
-    			socket.broadcast.to(list[i].socketId).join(newRoomName);	
-    			console.log("room 가입했다!!!", newRoomName, list[i].socketId, socket.rooms);		
-    			 
-    			socket.broadcast.to(newRoomName).emit('sendMsgOtherPeople', _data);    			
-    		};
+    	for(var i = 0, list = searchUser.friendsList, len = list.length ; i < len ; i += 1){    		
+    		for(var j = 0, jList = data.createInfo, jLen = jList.length ; i < jLen ; j += 1){
+    			// 내가 대화방을 만들려는 사람과 일치할 때(내 친구목록 중에서 가입을 시켜야하는 사람만 해야하므로)
+	    		if(list[i].username === jList[j]){
+	    			//console.log("room 가입했다!!!", newRoomName, list[i].socketId, socket.rooms);
+	    			// socket.id에 해당하는 그 사람에게 room을 가입시킴.
+	    			socket.broadcast.to(list[i].socketId).join(newRoomName);	
+	    			console.log("room 가입했다!!!", newRoomName, list[i].socketId, socket.rooms);		
+	    			
+	    			socket.broadcast.to(newRoomName).emit('sendMsgOtherPeople', _data);
+	    			
+	    			userInfoModel.findOneAndUpdate (
+	    				{username : data.userInfo.username},
+    					{'$set':{lastRoomIndex : roomIndex} }, {upsert:true}, 
+	    				function(err, doc){
+							if(err) { return console.error('Failed to update'); }
+							console.log('lastRoomIndex 업뎃 완료!!', doc);
+						}
+					);
+	    		};
+    		};    			
     	};
 				
 	});
-}
+};
 
 exports.roomCreate = function(socket, roomname, users, content, lastIndex){
+	
+	console.log("signUpEmailModel", signUpEmailModel)
+	console.log("talkMegModel", talkMegModel)
 	var talkMegSchema = new talkMegModel({
+		_id : "14",
+		roomname : "11",
+		users : ['users'],
+		Content : [
+			{
+				idx : "11",
+				date : {
+					year : 11,
+					month : "11",
+					date : "11",
+					day : "11",
+					hours : '11',
+					minutes : 11,
+					seconds : 11,
+				},
+				talkCnt : "content.talkCnt"
+			}
+		],
+		lastIndex : "lastIndex" // 객체의 프로퍼티로 id, 값에 마지막에 본 숫자.
+	});
+	talkMegSchema.save();
+	
+	
+	var talkMegSchema = new talkMegModel({
+		_id : roomname,
 		roomname : roomname,
 		users : users,
 		Content : [
 			{
 				idx : content.idx,
 				date : {
-					year : content.year,
-					month : content.month,
-					date : content.date,
-					day : content.day,
-					hours : content.hours,
-					minutes : content.minutes,
-					seconds : content.seconds
+					year : content.date.year,
+					month : content.date.month,
+					date : content.date.date,
+					day : content.date.day,
+					hours : content.date.hours,
+					minutes : content.date.minutes,
+					seconds : content.date.seconds
 				},
-				talkCnt : content.talkCnt
+				talkCnt : content.talkCnt + ''
 			}
 		],
 		lastIndex : lastIndex // 객체의 프로퍼티로 id, 값에 마지막에 본 숫자.
 	});
-	console.log(talkMegSchema)
+	console.log('talkMegSchema 저장하려고 합니다.', talkMegSchema);
 	talkMegSchema.save();
 	socket.rooms.push(roomname);
 	return socket.join(roomname);
 };
+
 exports.searchFriend = function(data, socket){
 	console.log("서버에서 friend 검색 요청을 받았당.", data);
 	var searchValue = data + '';
 	
-	userInfoModel.findOne({username : searchValue}, function(err, users){
+	userInfoModel.findOne({username : searchValue}).populate('signUp').exec(function(err, users){
 		if (err){return console.error(err);}
-		var data = {};
 		if(users === undefined || users === null){
 			return socket.emit('friendSearchResult', null);
 		};
-		
+		var data = {},
+			user = users.signUp;
 		// 개인 유저의 친구들의 정보 & 나의 정보를 data 객체에 저장.
-		data._myId = users._myId;
-		data.username = users.username;
-		data.email = users.email;
-		data.profileMsg = users.profileMsg;
-		data.profileBg = users.profileBg;
-		data.profilePic = users.profilePic;
+		data._myId = user._myId;
+		data.username = user.username;
+		data.email = user.email;
+		data.profileMsg = user.profileMsg;
+		data.profileBg = user.profileBg;
+		data.profilePic = user.profilePic;	
 				
 		// 검색한 데이터를 전송
 		socket.emit('friendSearchResult', data);
@@ -337,51 +373,64 @@ exports.saveSearchFriend = function(data, socket){
 	console.log("서버에서 friend 저장 요청을 받았당.", data);
 	var myUsername = data.myData.username + '',
 		username = data.data.username + '';
-		
-	userInfoModel.find({username : {$in : [myUsername, username]}}, function(err, users){
-		// 존재하지 않는 데이터일 경우 return.
-		console.log(users)
-		var _data = {
-			myData : null,
-			searchData : null
+	
+	/*
+	서버에서 friend 저장 요청을 받았당. 
+	{ 
+		data:
+	   		{ 
+		   		_myId: '박신혜',
+			     username: '박신혜',
+			     email: 'shp@gmail.com',
+			     profileMsg: null,
+			     profileBg: 'default_bg.jpg',
+			     profilePic: 'default.jpg' 
+		     },
+	  myData:
+		   { 
+			   	username: '숫자놀이',
+			     profilePic: 'default.jpg',
+			     _myId: '숫자놀이',
+			     profileMsg: null,
+			     nowRoom: null 
+		     } 
 		}
-		// 자신의 친구 목록에 존재하면 return.
-		for(var i = 0, len = users.length ; i < len ; i += 1){
-			if(users[i].username === myUsername){
-				for(var j = 0, _list = users[i].friendsList, _len = _list.length ; j < _len ; j += 1){
-					if(_list[j] && _list[j].email === data.data.email){				
-						return socket.emit('saveSearchFriendResult', false);
-					};
+	  */ 
+	userInfoModel.findOne({username : myUsername}).populate('friendsList').exec(function(err, users){
+		console.log(users)
+		var _data = {},
+			userEmail = data.data.email;
+		
+		// 이미 존재하면 바로 리턴.
+		console.log("users.friendsList", users.friendsList)
+		if(users.friendsList.length === 0){
+			console.log('친구 목록이 있네요!! 실행!')
+			for(var i = 0, list = users.friendsList, len = list.length ; i < len ; i += 1){
+				if(list[i] && list[i].email === userEmail){				
+					return socket.emit('saveSearchFriendResult', false);
 				};
-				_data.myData = users[i];
-				users[i+1] ? _data.searchData = users[i+1] : false;			
-				break;
-			} else {
-				_data.searchData = users[i];
 			};
-		};		
+		};
+				
+		// 나의 friendsList에 상대방을 추가함.
+		userInfoModel.findOneAndUpdate({username : myUsername}, {'$push' : {friendsList : username}}, function(err, doc){
+			console.log('push를 했습니다!', doc);
+		});
 		
-		var savingData = {};
-		savingData._myId = _data.searchData._myId;
-		savingData.email = _data.searchData.email;
-		savingData.profileMsg = _data.searchData.profileMsg;
-		savingData.profileBg = _data.searchData.profileBg;
-		savingData.profilePic = _data.searchData.profilePic;
-		savingData.username = _data.searchData.username;
-		savingData.socketId = _data.searchData.socketId;
-		
-		userInfoModel.findOneAndUpdate(
-			{username : myUsername},
-			{$push: {friendsList : savingData}},
-			{upsert:true}, function(err, doc){
-				if (err){return console.error(err);}
-				// 저장한 데이터를 전송
-				savingData.socketId = '';
-				socket.emit('saveSearchFriendResult', savingData);
-			}
-		);
-		
-	});
+		// 저장하려는 상대의 정보를 조회 후에 client로 넘김.
+		signUpEmailModel.findOne({username : username}, function(err, doc){
+			console.log("등록을 원하는 사람을 검색해봅니다.", username, doc)
+			_data._myId = doc._myId;
+			_data.email = doc.email;
+			_data.profileMsg = doc.profileMsg;
+			_data.profileBg = doc.profileBg;
+			_data.profilePic = doc.profilePic;
+			_data.username = doc.username;
+			
+			return socket.emit('saveSearchFriendResult', _data);
+		});
+	}) 
+	
 };
 
 

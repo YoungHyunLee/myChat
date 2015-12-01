@@ -291,7 +291,25 @@ User.update( {_id:'usr01'}, {$set:{name:'king'}}, {upsert:true}, function(err, d
 User.findOneAndUpdate ( {_id:'usr03'}, {$set:{name:'king', age:50} }, {upsert:true}, function(err, doc){
 	if(err) { return console.error('Failed to update'); }
 	console.log('Update Success');
-}); 
+});
+
+// 배열에 push할 때 사용.
+userInfoModel.findOneAndUpdate(
+	{username : myUsername},
+	{$push: {friendsList : savingData}},
+	{upsert:true}, function(err, doc){
+		if (err){return console.error(err);}
+		// 저장한 데이터를 전송
+		savingData.socketId = '';
+		socket.emit('saveSearchFriendResult', savingData);
+	}
+);
+
+// 배열에 pull할 때 사용.
+userInfoModel.findOneAndUpdate({username : '숫자놀이'}, {'$pull' : {friendsList : '박신혜'}}, function(err, doc){
+	console.log(doc)
+})
+	
 */
 
 /*
