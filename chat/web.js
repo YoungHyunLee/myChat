@@ -31,10 +31,16 @@ db.once('open', function(){
 		
 	// 개인 회원 정보 스키마 생성
 	var userInfoSchema = new Schema({
+		_id : String,
 		username : String,
-		email : String,
+		email : String,		
+		_myId : String, // 개인이 정할 수 있는 프로필값.		
+		profileMsg : String,
+		profileBg : String,
+		profilePic : String,
+		socketId : String,
 		lastRoomIndex : Number,
-		friendsList : [{type : String, ref : 'signUpEmails'}],
+		friendsList : [{type : String, ref : 'userInfos'}],
 		talkMsgs : [{type : String, ref : 'talkMegs'}],
 		signUp : {type : String, ref : 'signUpEmails'}
 	});	
@@ -44,12 +50,7 @@ db.once('open', function(){
 		_id : String,
 		username : String,
 		email : String,
-		password : String,
-		_myId : String, // 개인이 정할 수 있는 프로필값.		
-		profileMsg : String,
-		profileBg : String,
-		profilePic : String,
-		socketId : String
+		password : String
 		//friends : Object,
 		//talkList : Object
 		//fans : [{type : Number, ref : 'userInfos'}]
@@ -158,7 +159,6 @@ db.once('open', function(){
 	});
 	UserInfo2.save();	
 	*/
-	
 });
 
 
@@ -190,6 +190,7 @@ server.listen(process.env.PORT ||80);
 var socketAdmin = require('./serverModule/socketAdmin.js');
 
 // 소켓 통신 정의
+global.io = io;
 io.sockets.on('connection', function(socket){
 	// 초기 설정.	
 	socket.on('init', function (data) {
@@ -202,6 +203,7 @@ io.sockets.on('connection', function(socket){
 	socket.on('signUp_email', function(data){
 		socketAdmin.signUpEmail(data, socket)
 	});
+	
 	
 	/*
 		로그인 페이지.

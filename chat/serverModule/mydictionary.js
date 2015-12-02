@@ -288,7 +288,7 @@ User.update( {_id:'usr01'}, {$set:{name:'king'}}, {upsert:true}, function(err, d
 
 /*
 // findOneAndUpdate
-User.findOneAndUpdate ( {_id:'usr03'}, {$set:{name:'king', age:50} }, {upsert:true}, function(err, doc){
+userInfoModel.findOneAndUpdate ( {_id:'usr03'}, {$set:{name:'king', age:50} }, {upsert:true}, function(err, doc){
 	if(err) { return console.error('Failed to update'); }
 	console.log('Update Success');
 });

@@ -334,7 +334,11 @@ var g = (function(){
 				var _main = this,
 					_obj = this.obj,
 					_cg = cg;					
-					
+				
+				socket.on('ddd', function(data){
+					console.log(data);
+					console.dir(data);
+				})	
 				// obj 객체 초기화			
 				_obj.startPage = g.obj.startPage;
 				_obj.mainSection = g.obj.mainSection;
@@ -439,8 +443,21 @@ var g = (function(){
 					var temp = cg.friendsPage.friendsTemp(data.profilePic, data._myId, data.profileMsg);
 					li.innerHTML = temp;
 					li.className = 'friendList'
-					li._data = data;
-					_obj.friendsArea.getElementsByClassName('friendsList')[0].appendChild(li);					
+					li._data = data;					
+					L(li).on('click', function(e){
+						e.preventDefault();
+						var me = L(e.target).parentClassSearch('friendList'), data, isMe;
+						if(me._data){
+							data = me._data;
+							isMe = false;
+						} else {
+							data = cg.userInfo;
+							isMe = true;
+						};
+						g.friendsPage.profileView(data, isMe);
+					}, false);
+					
+					_obj.friendsArea.getElementsByClassName('friendsList')[0].appendChild(li);
 					
 					return L(_obj.friendSearchPop).removeClass('on');
 				}
@@ -697,7 +714,7 @@ var g = (function(){
 				// 기본 이벤트 정의
 				for(var i = 0, list = _obj.talkListLink, len = list.length ; i < len ; i +=1){
 					L(_obj.talkListLink[i]).on('click', function(e){
-						e.preventDefault();				
+						e.preventDefault();
 						g.talkPage.view(e);
 					}, false);
 				};				
@@ -825,17 +842,18 @@ var g = (function(){
 				_obj.textInput = _obj.sendMsgForm.elements.textInput;
 				_obj.emoticon = _obj.sendMsgForm.elements.emoticon;
 				_obj.sendBtn = _obj.sendMsgForm.elements.sendBtn;
+				
+				
 				// 서버로 보낼 이벤트 체크.
 				L(_obj.sendBtn).on('click', function(e){
 					e.preventDefault();
 					var otherData = _obj.allTalkWrap.lastChild._data.username;
 					
 					// _cg에게 obj 객체를 보내고
-					cg.talkPage.sendMsg(_obj.sendMsgForm, otherData);					
+					cg.talkPage.sendMsg(_obj.sendMsgForm, otherData);
 				}, false);
 			}
 		}
-		
 	};
 	// g 끝
 	
@@ -1377,10 +1395,14 @@ var cg = {
 			var data = {
 				userInfo : _cg.userInfo,
 				textValue : sendText,
-				createInfo : [createInfo],
+				createInfo : null,
 				isMe : null
 			};
+			if(createInfo){
+				data.createInfo = [createInfo];
+			};
 			// 서버로 전송.
+			console.log('sendMsg', data)
 			socket.emit('sendMsg', data);	
 			
 			// 서버에 넘긴 후 client는 사용자에게 바로 띄워줌.
@@ -1461,14 +1483,17 @@ var cg = {
 					myTalk = 						
 						'<div class="talkFriendImg">' +
 							'<img src="../uploads/userUploadPicture/' + data.userInfo.profilePic + '" alt ="사용자 프로필 사진">' +
-						'</div>';
-				};
+						'</div>' + 						
+						'<div class="talkTextArea">' +
+							'<em class="name">' + data.userInfo._myId + '</em>';
+				} else {					
+					myTalk =
+						'<div class="talkTextArea">';
+				}
 				// 상대가 쓴 글이 마지막일 경우
 				L(obj).append(
 					'<li class="talkList' + isMe + '">' +
 						myTalk +
-						'<div class="talkTextArea">' +
-							'<em class="name">' + data.userInfo._myId + '</em>' +
 							'<ol class="textTalkList">' +
 								'<li class="talkText">' +
 									'<span class="msg">' + talkCnt + '</span>' +

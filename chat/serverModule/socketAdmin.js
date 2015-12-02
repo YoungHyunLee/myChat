@@ -22,16 +22,17 @@ exports.signUpEmail = function(data, socket){
 					_id : data.username,
 					username : data.username,
 					email : data.email,
-					password : data.password,
+					password : data.password					
+				});				
+				var userInfoSchema = new userInfoModel({
+					_id : data.username,
+					username : data.username,
+					email : data.email,
 					_myId : data.username,
 					profileMsg : null,
 					profileBg : 'default_bg.jpg',
 					profilePic : 'default.jpg',
-					socketId : socket.id
-				});
-				var userInfoSchema = new userInfoModel({
-					username : data.username,
-					email : data.email,
+					socketId : socket.id,
 					lastRoomIndex : '',
 					friendsList : [],
 					signUp : data.username,
@@ -43,7 +44,7 @@ exports.signUpEmail = function(data, socket){
 				
 				var clientData = {
 					email : data.email,
-					password : data.password					
+					password : data.password // yhlee 추후 이 부분은 제거해야 하는데.. 지금은 귀차니즘.		
 				};	
 	
 				return socket.emit('signUp_email_succ', clientData);
@@ -54,14 +55,13 @@ exports.signUpEmail = function(data, socket){
 	});
 };
 
-
 /*
 	로그인 페이지.
 	signIn email에서 Sign in 버튼을 누른 후, 데이터를 받음. 
 */
 exports.loginCheck = function(data, socket){
 	// data는 username, email, password
-	console.log('로그인 버튼을 클릭했당!!');
+	console.log('로그인 버튼을 클릭했당!!', data.email, socket.id);
 	
 	// 여기에 지금 맞게 들어갔는지 체크는 하나도 없음. validation은 추후에 추가.
 	// 이메일과 pw가 맞으면 로그인 시킴.
@@ -76,8 +76,9 @@ exports.loginCheck = function(data, socket){
 				// 성공했을 때 넘김.
 				console.log('성공');
 				// socket.id 변경.
-				userInfoModel.update( {email:data.email}, {$set:{socketId:socket.id}}, {upsert:true}, function(err){
+				userInfoModel.update( {email:data.email}, {$set:{socketId:socket.id}}, {upsert:true}, function(err, doc){
 					if(err) { return console.error('Failed to update'); }
+					console.log('로그인을 했기 때문에 socket을 변경합니다!', doc)
 				});	
 				// 개인의 룸 초기화.
 				return exports.roomInit(data, socket)
@@ -137,34 +138,22 @@ exports.roomInit = function(data, socket){
 				seconds : nowDate.getSeconds()
 			}
 	};
-	// 개인정보에 해당하는 모델을 읽음. 친구목록 뿌리기.
-	
-	/*
-	userInfoModel.findAndUpdate(
-		{username : myUsername},
-		{$push: {friendsList : savingData}},
-		{upsert:true}, function(err, doc){
-			if (err){return console.error(err);}
-			// 저장한 데이터를 전송
-			savingData.socketId = '';
-			socket.emit('saveSearchFriendResult', savingData);
-		}
-	);
-	*/
-	userInfoModel.findOne({email : data.email}).populate('signUp friendsList talkMsg').exec(function(err, users){
+	// 개인정보에 해당하는 모델을 읽음. 친구목록 뿌리기.	
+	userInfoModel.findOne({email : data.email}).populate('friendsList talkMsgs').exec(function(err, users){
 		if (err){ return console.error(err);}
 		console.log('정보를 검색합니다.', users)
 		
 		var data = {},
-			signUp = users.signUp,
-			talkMsg = users.talkMsg;
-		console.log(talkMsg)
+			talkMsg = users.talkMsgs,
+			friendsData;
 		// 개인 유저의 친구들의 정보 & 나의 정보를 data 객체에 저장.
-		data._myId = signUp._myId;
-		data.username = signUp.username;
-		data.profilePic = signUp.profilePic;
-		data.profileBg = signUp.profileBg;
-		data.profileMsg = signUp.profileMsg;
+		data._myId = users._myId;
+		data.username = users.username;
+		data.profilePic = users.profilePic;
+		data.profileBg = users.profileBg;
+		data.profileMsg = users.profileMsg;
+		
+		friendsData = users.friendsList;
 		
 		allData.data = data;
 		allData.friendData = users.friendsList;
@@ -175,12 +164,12 @@ exports.roomInit = function(data, socket){
 		if(talkMsg === undefined){return socket.emit('signInEnd', allData);}
 		
 		socket.rooms = [];
-		for(var i = 0, list = talkMsg, len = list.length ; i < len ; i +=1){
-			roomData[i] = {};
-			roomData[i].roomname = list[i].roomname;
-			roomData[i].users = list[i].users;
-			roomData[i].Content = list[i].Content;
-			allData.talkMegData[i] = roomData[i];
+		for(var i = 0, list = talkMsg, len = list.length, roomData = {} ; i < len ; i +=1){
+			roomData = {};
+			roomData.roomname = list[i].roomname;
+			roomData.users = list[i].users;
+			roomData.Content = list[i].Content;
+			allData.talkMegData[i] = roomData;
 			//socket.join(list[i].roomname)
 			//console.log("ididiid", socket.id)
 			socket.join(list[i].roomname);
@@ -253,36 +242,48 @@ exports.newRoomCreate = function(data, socket){
 	// 개인정보에 해당하는 모델을 읽음. 친구목록 뿌리기.
 	userInfoModel.findOne({username : data.userInfo.username}).populate('friendsList').exec(function(err, searchUser){		
 		if (err){ return console.error(err);}
-		console.log('개인정보 검색 후', searchUser, data)
+		//console.log('개인정보 검색 후', searchUser, data)
 		
 		var roomIndex = 0, newRoomName;
-		if(searchUser.lastRoomIndex && searchUser.lastRoomIndex >=0){
+		if(searchUser.lastRoomIndex >=0){
 			roomIndex = searchUser.lastRoomIndex + 1
 		};
 		newRoomName = allData.roomname + '_' + roomIndex;
-		
 		// db에 room을 생성하고, 나를 join 시킴.
-		exports.roomCreate(socket, newRoomName, allData.users, allData.Content[0], allData.lastIndex);
+		//exports.roomCreate(socket, newRoomName, allData.users, allData.Content[0], allData.lastIndex);
+		userInfoModel.update(
+			{username : {$in : allUsers}},
+			{$push: {talkMsgs : newRoomName}},
+			{multi : true},
+			function(err, doc){
+				if (err){return console.error(err);}
+				// 저장한 데이터를 전송
+				//console.log('자 친구들을 찾아봅시다.', doc, allUsers, newRoomName)
+			}
+		);
 				
     	for(var i = 0, list = searchUser.friendsList, len = list.length ; i < len ; i += 1){    		
-    		for(var j = 0, jList = data.createInfo, jLen = jList.length ; i < jLen ; j += 1){
+    		for(var j = 0, jList = data.createInfo, jLen = jList.length ; j < jLen ; j += 1){
     			// 내가 대화방을 만들려는 사람과 일치할 때(내 친구목록 중에서 가입을 시켜야하는 사람만 해야하므로)
 	    		if(list[i].username === jList[j]){
 	    			//console.log("room 가입했다!!!", newRoomName, list[i].socketId, socket.rooms);
 	    			// socket.id에 해당하는 그 사람에게 room을 가입시킴.
-	    			socket.broadcast.to(list[i].socketId).join(newRoomName);	
-	    			console.log("room 가입했다!!!", newRoomName, list[i].socketId, socket.rooms);		
+	    			socket.broadcast.to(list[i].socketId).join(newRoomName);
+	    			io.sockets.connected[list[i].socketId].join(newRoomName);
+	    			console.log("room 가입했다!!!", newRoomName, list[i].socketId, socket.rooms, socket.manager.rooms);
 	    			
-	    			socket.broadcast.to(newRoomName).emit('sendMsgOtherPeople', _data);
-	    			
-	    			userInfoModel.findOneAndUpdate (
+	    			userInfoModel.findOneAndUpdate(
 	    				{username : data.userInfo.username},
-    					{'$set':{lastRoomIndex : roomIndex} }, {upsert:true}, 
+    					{
+    						'$set':{lastRoomIndex : roomIndex}
+    					}, {upsert:true, overwrite: true}, 
 	    				function(err, doc){
-							if(err) { return console.error('Failed to update'); }
-							console.log('lastRoomIndex 업뎃 완료!!', doc);
+							if(err) { return console.error('Failed to update lastRoomIndex'); }
+							console.log('lastRoomIndex 업뎃 완료!!', socket.manager.rooms);
+	    					socket.broadcast.to(newRoomName).emit('sendMsgOtherPeople', _data);
 						}
 					);
+					
 	    		};
     		};    			
     	};
@@ -290,34 +291,7 @@ exports.newRoomCreate = function(data, socket){
 	});
 };
 
-exports.roomCreate = function(socket, roomname, users, content, lastIndex){
-	
-	console.log("signUpEmailModel", signUpEmailModel)
-	console.log("talkMegModel", talkMegModel)
-	var talkMegSchema = new talkMegModel({
-		_id : "14",
-		roomname : "11",
-		users : ['users'],
-		Content : [
-			{
-				idx : "11",
-				date : {
-					year : 11,
-					month : "11",
-					date : "11",
-					day : "11",
-					hours : '11',
-					minutes : 11,
-					seconds : 11,
-				},
-				talkCnt : "content.talkCnt"
-			}
-		],
-		lastIndex : "lastIndex" // 객체의 프로퍼티로 id, 값에 마지막에 본 숫자.
-	});
-	talkMegSchema.save();
-	
-	
+exports.roomCreate = function(socket, roomname, users, content, lastIndex){	
 	var talkMegSchema = new talkMegModel({
 		_id : roomname,
 		roomname : roomname,
@@ -339,9 +313,9 @@ exports.roomCreate = function(socket, roomname, users, content, lastIndex){
 		],
 		lastIndex : lastIndex // 객체의 프로퍼티로 id, 값에 마지막에 본 숫자.
 	});
-	console.log('talkMegSchema 저장하려고 합니다.', talkMegSchema);
 	talkMegSchema.save();
 	socket.rooms.push(roomname);
+			
 	return socket.join(roomname);
 };
 
@@ -349,20 +323,19 @@ exports.searchFriend = function(data, socket){
 	console.log("서버에서 friend 검색 요청을 받았당.", data);
 	var searchValue = data + '';
 	
-	userInfoModel.findOne({username : searchValue}).populate('signUp').exec(function(err, users){
+	userInfoModel.findOne({username : searchValue}).exec(function(err, users){
 		if (err){return console.error(err);}
 		if(users === undefined || users === null){
 			return socket.emit('friendSearchResult', null);
 		};
-		var data = {},
-			user = users.signUp;
+		var data = {};
 		// 개인 유저의 친구들의 정보 & 나의 정보를 data 객체에 저장.
-		data._myId = user._myId;
-		data.username = user.username;
-		data.email = user.email;
-		data.profileMsg = user.profileMsg;
-		data.profileBg = user.profileBg;
-		data.profilePic = user.profilePic;	
+		data._myId = users._myId;
+		data.username = users.username;
+		data.email = users.email;
+		data.profileMsg = users.profileMsg;
+		data.profileBg = users.profileBg;
+		data.profilePic = users.profilePic;	
 				
 		// 검색한 데이터를 전송
 		socket.emit('friendSearchResult', data);
@@ -418,7 +391,7 @@ exports.saveSearchFriend = function(data, socket){
 		});
 		
 		// 저장하려는 상대의 정보를 조회 후에 client로 넘김.
-		signUpEmailModel.findOne({username : username}, function(err, doc){
+		userInfoModel.findOne({username : username}, function(err, doc){
 			console.log("등록을 원하는 사람을 검색해봅니다.", username, doc)
 			_data._myId = doc._myId;
 			_data.email = doc.email;
@@ -525,7 +498,6 @@ exports.sendMsgRoom = function(data, socket){
 			};
 		};
 		var talkMeg = {
-			_id : 0,
 			idx : userInd, // 누가 보냈냐.
 			date : {
 				year : date.getFullYear(), // getYear는 비표준 폐기됨.
@@ -538,7 +510,7 @@ exports.sendMsgRoom = function(data, socket){
 			},
 			talkCnt : data.textValue
 		};
-		
+		console.log('자 이제 보낸 msg 업데이트 합니다.', findTalkCentent, data.userInfo.nowRoom, talkMeg)
 		talkMegModel.findOneAndUpdate(
 			{roomname : data.userInfo.nowRoom}, 
 			{$push: {Content: talkMeg}},
