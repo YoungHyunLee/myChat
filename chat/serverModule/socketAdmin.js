@@ -8,6 +8,7 @@
 	회원가입 페이지	 
 	signUp email에서 저장버튼을 누른 후, 데이터를 받음.
  */
+
 exports.signUpEmail = function(data, socket){
 	// data는 username, email, password
 	console.log('회원가입 버튼을 클릭했당!!');		
@@ -233,7 +234,9 @@ exports.newRoomCreate = function(data, socket){
 		userInfo : data.userInfo,
 		textValue : data.textValue,
 		date : allData.Content[0].date,
-		isDouble : false
+		allUsers : allUsers,
+		isDouble : false,
+		isNewRoom : true
 	};
 	// lastIndex 추가용.
 	for(var i = 0, list = allData.users, len = list.length ; i < len ; i += 1){
@@ -248,9 +251,9 @@ exports.newRoomCreate = function(data, socket){
 		if(searchUser.lastRoomIndex >=0){
 			roomIndex = searchUser.lastRoomIndex + 1
 		};
-		newRoomName = allData.roomname + '_' + roomIndex;
+		_data.userInfo.nowRoom = newRoomName = allData.roomname + '_' + roomIndex;		
 		// db에 room을 생성하고, 나를 join 시킴.
-		//exports.roomCreate(socket, newRoomName, allData.users, allData.Content[0], allData.lastIndex);
+		exports.roomCreate(socket, newRoomName, allData.users, allData.Content[0], allData.lastIndex);
 		userInfoModel.update(
 			{username : {$in : allUsers}},
 			{$push: {talkMsgs : newRoomName}},
@@ -268,18 +271,16 @@ exports.newRoomCreate = function(data, socket){
 	    		if(list[i].username === jList[j]){
 	    			//console.log("room 가입했다!!!", newRoomName, list[i].socketId, socket.rooms);
 	    			// socket.id에 해당하는 그 사람에게 room을 가입시킴.
-	    			socket.broadcast.to(list[i].socketId).join(newRoomName);
-	    			io.sockets.connected[list[i].socketId].join(newRoomName);
-	    			console.log("room 가입했다!!!", newRoomName, list[i].socketId, socket.rooms, socket.manager.rooms);
+	    			io.sockets.connected[list[i].socketId].join(newRoomName)
+	    			//console.log("room 가입했다!!!", newRoomName, list[i].socketId, socket.rooms, socket.manager.rooms);
 	    			
 	    			userInfoModel.findOneAndUpdate(
 	    				{username : data.userInfo.username},
     					{
     						'$set':{lastRoomIndex : roomIndex}
-    					}, {upsert:true, overwrite: true}, 
+    					}, {upsert:true, overwrite: true},
 	    				function(err, doc){
 							if(err) { return console.error('Failed to update lastRoomIndex'); }
-							console.log('lastRoomIndex 업뎃 완료!!', socket.manager.rooms);
 	    					socket.broadcast.to(newRoomName).emit('sendMsgOtherPeople', _data);
 						}
 					);
@@ -537,13 +538,6 @@ exports.sendMsgRoom = function(data, socket){
 	});
 	
 };
-
-
-
-
-
-
-
 
 
 

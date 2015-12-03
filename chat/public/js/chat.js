@@ -335,10 +335,6 @@ var g = (function(){
 					_obj = this.obj,
 					_cg = cg;					
 				
-				socket.on('ddd', function(data){
-					console.log(data);
-					console.dir(data);
-				})	
 				// obj 객체 초기화			
 				_obj.startPage = g.obj.startPage;
 				_obj.mainSection = g.obj.mainSection;
@@ -909,11 +905,14 @@ var cg = {
 		 		}
 			*/
 			console.log('sendMsgOtherPeople의 메시지를 받았당. data는', data);
+			if(data.isNewRoom === true){
+				return _this.talkListAreaPage.newTalkList(data);
+			};
 			var gObj = g.viewGlobal.obj,
 				doc = document,
 				roomEle = doc.getElementById(data.userInfo.nowRoom),
 				frag = doc.createDocumentFragment();
-						
+			
 			_this.talkPage.paintOnceMsg(frag, data.isDouble, '', data.userInfo.profilePic, data.userInfo._myId, data.textValue, data.date);	
 			
 			/*
@@ -927,7 +926,7 @@ var cg = {
 			} else {
 				obj.getElementsByClassName('talkListArea')[0].appendChild(frag);
 				obj.lastChild.srcollTop = 99999;
-			};			
+			};
 			
 			// paintOnceMsg : function(obj, isDouble, isMe, picUrl, _myId, talkCnt, date){
 			// return {obj : obj, temp : temp}
@@ -1203,6 +1202,21 @@ var cg = {
 			};
 			talkListOl.appendChild(frag);
 		},
+		newTalkList : function(data){
+			console.log('자 이제 새로운 걸 그려봅시다.', data);
+			var _this = this,
+				_obj = this.obj,
+				doc = document;
+				
+			var talkListOl = g.viewGlobal.obj.talkListArea.children[0];
+			var frag = doc.createDocumentFragment();
+			var div = doc.createElement('div');
+			
+			div.innerHTML = this.talkListTemp(data.userInfo.profilePic, data.allUsers, data.date, data.textValue, data.date);
+			div.lastChild._roomname = data.userInfo.nowRoom;
+			frag.appendChild(div.lastChild);
+			talkListOl.appendChild(frag);		
+		},
 		// 채팅 목록 템플릿.
 		talkListTemp : function(picUrl, myId, date, lastMsg, nowDate){
 			if(picUrl === undefined) picUrl = 'default.jpg';
@@ -1371,7 +1385,7 @@ var cg = {
 									'<input type=text name="textInput" title="말하고 싶은 글 입력" placeholder="Write text...." class="textInputField" />' +							
 								'</div>' +
 								'<div class="sendBtnWrap">' +
-									'<button type=submit name="emoticon" class="emoticonBtn" title="이모티콘 사용하기">@</button>' +
+									'<button type=button name="emoticon" class="emoticonBtn" title="이모티콘 사용하기">@</button>' +
 									'<button type=submit name="sendBtn" class="sendBtn" title="보내기">전송</button>' +
 								'</div>' +
 							'</fieldset>' +

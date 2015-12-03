@@ -182,6 +182,7 @@ app.get('/', function (req, res) {
 	});
 });
 
+
 // 서버 시작.
 server.listen(process.env.PORT ||80);
 
@@ -204,7 +205,10 @@ io.sockets.on('connection', function(socket){
 		socketAdmin.signUpEmail(data, socket)
 	});
 	
-	
+	// room을 가입할 때.
+	socket.on('joinRoom', function(data){
+		socketAdmin.signUpEmail(data, socket);
+	});
 	/*
 		로그인 페이지.
 		signIn email에서 Sign in 버튼을 누른 후, 데이터를 받음. 
@@ -236,7 +240,7 @@ io.sockets.on('connection', function(socket){
 			socketAdmin.sendMsgRoom(data, socket);
 		}
 	});
-			
+	
 	// 접속이 종료되면 trigger
   	socket.on('disconnect', function () {
   		console.log('접속 종료 메서드 실행!!!.', socket.rooms);
@@ -260,8 +264,6 @@ io.sockets.on('connection', function(socket){
  	
  	
 });
-
-
 
 
 
