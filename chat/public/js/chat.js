@@ -548,10 +548,10 @@ var g = (function(){
 						_obj = this.obj;
 						
 					for(var i = 0, list = _obj.waitArea, len = list.length ; i < len ; i +=1){
-						L(_obj.waitArea[i]).removeClass('on');								
+						L(_obj.waitArea[i]).removeClass('on');
 					};
 					
-					L(_obj.lnbHeadText).textContent = "Chating";	
+					L(_obj.lnbHeadText).textContent = "Chating";
 					L(_obj.talkListArea).addClass('on');
 					L(_obj.friendSearchPopBtn).removeClass('on');
 					
@@ -585,12 +585,14 @@ var g = (function(){
 		friendsPage : {
 			obj : {
 				isInit : false,
+				isRunningTalkUserBtn : false,
 				mainSection : null,
 				lnbTopMenuBtn : null,
 				lnbTopTalkPrevBtn : null,
 				friendSearchPopBtn : null,
 				lnbHeadText : null,
 				friendsArea : null,
+				talkListArea : null,
 				talkArea : null,
 				friendList : null,
 				profilePop : null,
@@ -653,8 +655,28 @@ var g = (function(){
 					L(_obj.profilePop).removeClass('on');
 				});				
 				L(_obj.talkUserBtn).on('click', function(e){
-					var data = _obj.profilePop._data;
+					if(_obj.isRunningTalkUserBtn) return false;
+					_obj.isRunningTalkUserBtn = true;
+					var data = _obj.profilePop._data,
+						nowUsers = [data.username, cg.userInfo.username].sort() + '';
+										
+					for(var i = 0, list = _obj.talkListArea.getElementsByClassName('friendList') ,len = list.length, sortList ; i < len ; i += 1){
+						sortList = list[i]._data.users.sort() + '';
+						console.log('있는지 없는지 테스트용.',  nowUsers, sortList, nowUsers === sortList);
+						switch(nowUsers === sortList){
+							case true : 
+								// 이미 만들어진 대화방이 있으면 오픈.
+								L(_obj.profilePop).removeClass('on');
+								g.talkPage.view(list[i]);
+								return _obj.isRunningTalkUserBtn = false;
+							case false : 
+								// 반복을 돌려야 하니 진행.
+								continue;
+						}
+					};
 					g.talkPage.createTalkRoom(data);
+					return _obj.isRunningTalkUserBtn = false;				
+					
 				});
 			},
 			view : function(){
@@ -735,6 +757,7 @@ var g = (function(){
 		// 채팅방 정의
 		talkPage : {
 			obj : {
+				isNewRoomCreateComplete : false,
 				isView : false,
 				talkListArea : null,
 				talkArea : null,
@@ -772,6 +795,7 @@ var g = (function(){
 			view : function(e){
 				var _obj = this.obj;
 				if(_obj.isView === false) this.init();
+				e.target ? true : e.target = e;
 				
 				L(_obj.lnbTopMenuBtn).removeClass('on');
 				L(_obj.lnbTopTalkPrevBtn).addClass('on');
@@ -785,14 +809,14 @@ var g = (function(){
 						ele = ele.parentNode;
 					} else {
 						ind = L(ele).index();
-						cg.userInfo.nowRoom = L(ele)._roomname;
+						cg.userInfo.nowRoom = L(ele)._data.roomname;
 						cg.talkPage.searchTalkRoom(ind);
 						break;
 					};
 				};
 				var selectTalkList =  L(_obj.allTalkWrap).eq(ind);
 				L(selectTalkList).addClass('on');
-				// talkRoom event binding	
+				// talkRoom event binding
 				_obj.sendMsgForm = selectTalkList.getElementsByClassName('sendMsgForm')[0];
 				_obj.textInput = _obj.sendMsgForm.elements.textInput;
 				_obj.emoticon = _obj.sendMsgForm.elements.emoticon;
@@ -839,15 +863,23 @@ var g = (function(){
 				_obj.emoticon = _obj.sendMsgForm.elements.emoticon;
 				_obj.sendBtn = _obj.sendMsgForm.elements.sendBtn;
 				
-				
 				// 서버로 보낼 이벤트 체크.
 				L(_obj.sendBtn).on('click', function(e){
 					e.preventDefault();
-					var otherData = _obj.allTalkWrap.lastChild._data.username;
+					if(_obj.isNewRoomCreateComplete) return false;
 					
-					// _cg에게 obj 객체를 보내고
-					cg.talkPage.sendMsg(_obj.sendMsgForm, otherData);
-				}, false);
+					_obj.isNewRoomCreateComplete = true;
+					L(g.obj.loadingBar).addClass('on');
+					
+					if(e.target._data){
+						var selectTalkList = document.getElementById('room_' + e.target._data.room);
+						var selectForm = selectTalkList.getElementsByClassName('sendMsgForm')[0];
+						cg.talkPage.sendMsg(selectForm);
+					} else {
+						var otherData = _obj.allTalkWrap.lastChild._data.username;
+						cg.talkPage.sendMsg(_obj.sendMsgForm, otherData);
+					};
+				});
 			}
 		}
 	};
@@ -866,11 +898,7 @@ var lQuery ,L = g.L;
 
 var socket = io.connect();
 socket.on('connect', function (data) {
-	var _data = {};
-	_data.name = 'myRoom2';
-	_data.id = new Date().getTime() + 'start';
-		
-    socket.emit('init', _data);
+    socket.emit('init', '실행');
 });
 // 채팅관련 함수를 넘기기 위해 전역변수 추가.
 var cg = {
@@ -905,8 +933,18 @@ var cg = {
 		 		}
 			*/
 			console.log('sendMsgOtherPeople의 메시지를 받았당. data는', data);
-			if(data.isNewRoom === true){
+			if(data.isNewRoom === true) {// 새로운 사람에게 메시지를 받았을 때.
 				return _this.talkListAreaPage.newTalkList(data);
+			} else if(typeof data === 'string') {// 상대방의 이유로 발송이 실패했을 때.
+				L(g.viewGlobal.obj.loadingBar).removeClass('on');
+				return g.viewGlobal.mainControl.alert(data);
+			} else if(data.complete) { // 내가 새로 방을 만들어서 내게 완료했다고 알려줌.				
+				g.viewGlobal.talkPage.obj.sendBtn._data = {
+					room : data._data.userInfo.nowRoom
+				};
+				_this.talkListAreaPage.newTalkList(data);
+				g.viewGlobal.talkPage.obj.isNewRoomCreateComplete = false;
+				return L(g.viewGlobal.obj.loadingBar).removeClass('on');
 			};
 			var gObj = g.viewGlobal.obj,
 				doc = document,
@@ -1163,14 +1201,21 @@ var cg = {
 			var talkListOl = _obj.talkListArea.children[0];
 			var frag = doc.createDocumentFragment(),
 				talkFrag = doc.createDocumentFragment();
-			var div = doc.createElement('div');
+			var div = doc.createElement('div'),
+				_data = {
+					roomname : '',
+					users : ''
+				};
 			talkListOl.innerHTML = '';
 			
 			for(var i = 0, list = data.talkMegData, len = list.length, content, ol, talkElement, roomList ; i < len ; i +=1){
 				content = list[i].Content;
 				talkElement = this.talkListTemp(undefined, list[i].users, content[content.length-1].date, content[content.length-1].talkCnt, data.date);
 				div.innerHTML = talkElement;
-				div.lastChild.id = div.lastChild._roomname = list[i].roomname;
+				_data.roomname = list[i].roomname;
+				_data.users = list[i].users;
+				div.lastChild._data = _data;
+				div.lastChild.id = 'room_' + _data.roomname;
 				frag.appendChild(div.lastChild);
 				
 				// 채팅 룸 초기화.				
@@ -1180,7 +1225,6 @@ var cg = {
 			};
 			talkListOl.appendChild(frag);
 			_obj.allTalkWrap.appendChild(talkFrag);
-			// 채팅 룸 초기화
 		},
 		// 채팅 목록 뿌리기.(새로운 룸이 생기거나 초대를 받을 때 처리)
 		paintMyTalkList : function(data){
@@ -1190,32 +1234,59 @@ var cg = {
 				
 			var talkListOl = g.viewGlobal.obj.talkListArea.children[0];
 			var frag = doc.createDocumentFragment();
-			var div = doc.createElement('div');
+			var div = doc.createElement('div'),
+				_data = {
+					roomname : '',
+					users : ''
+				};
 			
 			for(var i = 0, list = data.talkMegData, len = list.length, content, ol, talkElement ; i < len ; i +=1){
 				content = list[i].Content;
 				talkElement = this.talkListTemp(undefined, list[i].users, content[content.length-1].date, content[content.length-1].talkCnt, data.date);
 				div.innerHTML = talkElement;
-				div.lastChild._roomname = list[i].roomname;
+				_data.roomname = list[i].roomname;
+				_data.users = list[i].users;
+				div.lastChild._data = _data;
+				div.lastChild.id = 'room_' + _data.roomname;
 				frag.appendChild(div.lastChild);
-				console.dir(frag);
+				console.dir('채팅 목록 뿌리기 for문 돌림', frag);
 			};
 			talkListOl.appendChild(frag);
 		},
-		newTalkList : function(data){
+		newTalkList : function(data, isMe){
 			console.log('자 이제 새로운 걸 그려봅시다.', data);
 			var _this = this,
 				_obj = this.obj,
-				doc = document;
+				doc = document,
+				originData = data, 
+				data = data.complete ? data._data : data;
 				
 			var talkListOl = g.viewGlobal.obj.talkListArea.children[0];
-			var frag = doc.createDocumentFragment();
-			var div = doc.createElement('div');
+			var frag = doc.createDocumentFragment(),
+				talkFrag = doc.createDocumentFragment(),
+				div = doc.createElement('div'),
+				_data = {
+					roomname : data.userInfo.nowRoom,
+					users : data.allUsers
+				};
 			
 			div.innerHTML = this.talkListTemp(data.userInfo.profilePic, data.allUsers, data.date, data.textValue, data.date);
-			div.lastChild._roomname = data.userInfo.nowRoom;
+			div.lastChild._data = _data;
+			div.lastChild.id = 'room_' + data.userInfo.nowRoom;
 			frag.appendChild(div.lastChild);
-			talkListOl.appendChild(frag);		
+			L(frag.lastChild.lastChild).on('click', function(e){
+				e.preventDefault();
+				g.viewGlobal.talkPage.view(e);
+			});
+			talkListOl.appendChild(frag);
+			
+			if(originData.complete !== true){				
+				// 채팅 룸 초기화.			
+				div.innerHTML = cg.talkPage.talkRoomTemp();
+				talkFrag.appendChild(div.firstChild);
+				_obj.allTalkWrap.appendChild(talkFrag);
+			};			
+			return L(g.viewGlobal.obj.loadingBar).removeClass('on');
 		},
 		// 채팅 목록 템플릿.
 		talkListTemp : function(picUrl, myId, date, lastMsg, nowDate){
@@ -1298,7 +1369,7 @@ var cg = {
 			var obj = _obj.talkListArea.getElementsByClassName('friendList')[ind];
 			var data = {
 				clickInd : ind,
-				roomname : obj._roomname,
+				roomname : obj._data.roomname,
 				username : cg.userInfo.username
 			};
 				

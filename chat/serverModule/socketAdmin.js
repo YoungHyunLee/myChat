@@ -253,25 +253,32 @@ exports.newRoomCreate = function(data, socket){
 		};
 		_data.userInfo.nowRoom = newRoomName = allData.roomname + '_' + roomIndex;		
 		// db에 room을 생성하고, 나를 join 시킴.
-		exports.roomCreate(socket, newRoomName, allData.users, allData.Content[0], allData.lastIndex);
-		userInfoModel.update(
-			{username : {$in : allUsers}},
-			{$push: {talkMsgs : newRoomName}},
-			{multi : true},
-			function(err, doc){
-				if (err){return console.error(err);}
-				// 저장한 데이터를 전송
-				//console.log('자 친구들을 찾아봅시다.', doc, allUsers, newRoomName)
-			}
-		);
-				
+						
     	for(var i = 0, list = searchUser.friendsList, len = list.length ; i < len ; i += 1){    		
     		for(var j = 0, jList = data.createInfo, jLen = jList.length ; j < jLen ; j += 1){
     			// 내가 대화방을 만들려는 사람과 일치할 때(내 친구목록 중에서 가입을 시켜야하는 사람만 해야하므로)
 	    		if(list[i].username === jList[j]){
 	    			//console.log("room 가입했다!!!", newRoomName, list[i].socketId, socket.rooms);
 	    			// socket.id에 해당하는 그 사람에게 room을 가입시킴.
-	    			io.sockets.connected[list[i].socketId].join(newRoomName)
+	    			console.log(io.sockets.connected[list[i].socketId])
+	    			if(io.sockets.connected[list[i].socketId]){
+	    				io.sockets.connected[list[i].socketId].join(newRoomName)
+	    			} else {
+	    				// 없다는 건 접속중이 아니라는 의미. 
+	    				// 일단 난 로그인을 하게된 이후에는 그 소켓은 본인의 것이니... 일단 보류.
+	    				return socket.emit('sendMsgOtherPeople', '접속중이 아닙니다.');	    				
+	    			};
+	    			exports.roomCreate(socket, newRoomName, allData.users, allData.Content[0], allData.lastIndex);
+					userInfoModel.update(
+						{username : {$in : allUsers}},
+						{$push: {talkMsgs : newRoomName}},
+						{multi : true},
+						function(err, doc){
+							if (err){return console.error(err, 'err');}
+							// 저장한 데이터를 전송
+							//console.log('자 친구들을 찾아봅시다.', doc, allUsers, newRoomName)
+						}
+					);
 	    			//console.log("room 가입했다!!!", newRoomName, list[i].socketId, socket.rooms, socket.manager.rooms);
 	    			
 	    			userInfoModel.findOneAndUpdate(
@@ -282,6 +289,11 @@ exports.newRoomCreate = function(data, socket){
 	    				function(err, doc){
 							if(err) { return console.error('Failed to update lastRoomIndex'); }
 	    					socket.broadcast.to(newRoomName).emit('sendMsgOtherPeople', _data);
+	    					
+	    					socket.emit('sendMsgOtherPeople', {
+	    						complete : true,
+	    						_data : _data
+	    					});
 						}
 					);
 					
