@@ -150,6 +150,9 @@ html{font-size:16px;}
 
 .gnbBtn{width:100%;font-size:1.625rem;text-align:center;line-height:48px;color:#333;}
 
+.gnbBtn .newMsgNumber{display:inline-block;position:absolute;top:-8px;right:-8px;min-width:16px;height:16px;background:#f00;border-radius:50%;font-size:0.75rem;color:#fff;line-height:16px;}
+.gnbBtn .newMsgNumber:empty{display:none;}
+
 /* 친구 목록 & 대화 목록 공통 */
 .waitArea{top:61px;bottom:41px;display:none;}
 .waitArea.on{display:block;}
@@ -192,6 +195,13 @@ html{font-size:16px;}
 .layerPop.profile .utilBtns .btn .glyphicon{color:#484848;}
 .layerPop.profile .utilBtns .btn:hover .glyphicon{color:#000;}
 .layerPop.profile .utilBtns .btn em{display:block;font-size:0.75rem;color:#000;}
+
+/* 새로운 메시지 알림팝업 */
+.newMsgAlert{}
+.newMsgAlert.on{}
+.layerPop.newMsgAlert .popContainer{width:260px;background-color:#000;}
+
+.newMsgAlert .msgValue{color:#fff;}
 
 
 /* 대화 목록 */

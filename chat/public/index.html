@@ -239,7 +239,11 @@
 						<button type=button id="friendsFireBtn" class='gnbBtn friends on' title="친구"><span class="glyphicon glyphicon-user"></span></button>						
 					</li>
 					<li class="gnbList">
-						<button type=button id="talkListFireBtn" class='gnbBtn talkListArea' title="채팅"><span class="glyphicon glyphicon-envelope"></span></button>						
+						<button type=button id="talkListFireBtn" class='gnbBtn talkListArea' title="채팅">
+							<span class="glyphicon glyphicon-envelope">
+								<span id="newMsgNumber" class="newMsgNumber"></span>
+							</span>
+						</button>						
 					</li>
 					<li class="gnbList">
 						<button type=button id="moreFireBtn" class='gnbBtn more' title="더보기"><span class="glyphicon glyphicon-option-horizontal"></span></button>						
@@ -305,6 +309,14 @@
 			<a class="searchResult"></a>
 			<button id='saveFriend' class="btn btn-sm btn-primary saveFriend" type="button">Save</button>
 			<a class="popClose" href="#" title="검색창 닫기"><span class="glyphicon glyphicon-remove"></span></a>
+		</div>
+	</article>
+	
+	
+	<!-- 새로운 메시지가 왔을 때 -->
+	<article id='newMsgAlertPop' class="layerPop newMsgAlert">
+		<div class="popContainer">
+			<p class="msgValue">메시지가 도착했어요~!!</p>
 		</div>
 	</article>
 	

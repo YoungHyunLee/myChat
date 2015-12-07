@@ -717,11 +717,15 @@ var g = (function(){
 			init : function(){
 				var _this = this,
 					_obj = this.obj,
-					_cg = cg;					
+					_cg = cg,
+					_cgObj = _cg.talkListAreaPage.obj;				
 				// obj 객체 초기화
 				_obj.isView = true;				
 				for(var i in _obj){
 					g.obj[i] !== undefined ? _obj[i] = g.obj[i] : true;
+				};
+				for(var i in _obj){
+					_cgObj[i] !== undefined ? true : _cgObj[i] = _obj[i];
 				};
 				_obj.talkListLink = document.querySelectorAll('.area_talkListLink');
 				
@@ -957,18 +961,26 @@ var cg = {
 			
 			_this.talkPage.paintOnceMsg(frag, data.isDouble, '', data.userInfo.profilePic, data.userInfo._myId, data.textValue, data.date);	
 			
+			// 새로운 글이 왔다는 것을 알려줘야 함. & 그리고 뿌려야 함.
+			cg.talkListAreaPage.newMsgPaint(data);
 			/*
 			 var div = document.createElement('div');
 			div.innerHTML = talkElement.temp;
 			 */
-			var obj = L(gObj.allTalkWrap).eq(L(roomEle).index());
-			if(data.isDouble){
-				obj.getElementsByClassName('talkListArea')[0].lastChild.getElementsByClassName('textTalkList')[0].appendChild(frag);
-				obj.lastChild.srcollTop = 99999;
-			} else {
-				obj.getElementsByClassName('talkListArea')[0].appendChild(frag);
-				obj.lastChild.srcollTop = 99999;
+			switch(cg.userInfo.nowRoom === null){
+				case true : 
+					return false;
+				case false : 
+					var obj = L(gObj.allTalkWrap).eq(L(roomEle).index());
+					if(data.isDouble){
+						obj.getElementsByClassName('talkListArea')[0].lastChild.getElementsByClassName('textTalkList')[0].appendChild(frag);
+						obj.lastChild.srcollTop = 99999;
+					} else {
+						obj.getElementsByClassName('talkListArea')[0].appendChild(frag);
+						obj.lastChild.srcollTop = 99999;
+					};
 			};
+			
 			
 			// paintOnceMsg : function(obj, isDouble, isMe, picUrl, _myId, talkCnt, date){
 			// return {obj : obj, temp : temp}
@@ -1190,7 +1202,9 @@ var cg = {
 		obj : {
 			talkListArea : null,
 			talkArea : null,
-			allTalkWrap : null
+			allTalkWrap : null,
+			newMsgAlertPop : null,
+			newMsgNumber : null
 		},
 		init : function(data){
 			// 초기 객체 바인딩.
@@ -1201,28 +1215,30 @@ var cg = {
 			for(var i in _obj){
 				 _g[i] !== undefined ? _obj[i] = _g[i] : true;
 			};
+			
+			_obj.newMsgAlertPop = doc.getElementById('newMsgAlertPop');
+			_obj.newMsgNumber = doc.getElementById('newMsgNumber');			
+			
 			// 초기화 및 기존 대화 목록 초기화.
 			var talkListOl = _obj.talkListArea.children[0];
 			var frag = doc.createDocumentFragment(),
 				talkFrag = doc.createDocumentFragment();
-			var div = doc.createElement('div'),
-				_data = {
-					roomname : '',
-					users : ''
-				};
+			var div = doc.createElement('div');
 			talkListOl.innerHTML = '';
 			
-			for(var i = 0, list = data.talkMegData, len = list.length, content, ol, talkElement, roomList ; i < len ; i +=1){
+			for(var i = 0, list = data.talkMegData, len = list.length, content, ol, talkElement, roomList, _data ; i < len ; i +=1){
+				_data = {
+					roomname : list[i].roomname,
+					users : list[i].users
+				};
 				content = list[i].Content;
 				talkElement = this.talkListTemp(undefined, list[i].users, content[content.length-1].date, content[content.length-1].talkCnt, data.date);
 				div.innerHTML = talkElement;
-				_data.roomname = list[i].roomname;
-				_data.users = list[i].users;
 				div.lastChild._data = _data;
 				div.lastChild.id = 'room_' + _data.roomname;
 				frag.appendChild(div.lastChild);
 				
-				// 채팅 룸 초기화.				
+				// 채팅 룸 초기화.
 				roomList = cg.talkPage.talkRoomTemp();
 				div.innerHTML = roomList;
 				talkFrag.appendChild(div.firstChild);
@@ -1238,13 +1254,13 @@ var cg = {
 				
 			var talkListOl = g.viewGlobal.obj.talkListArea.children[0];
 			var frag = doc.createDocumentFragment();
-			var div = doc.createElement('div'),
+			var div = doc.createElement('div');
+						
+			for(var i = 0, list = data.talkMegData, len = list.length, content, ol, talkElement, _data ; i < len ; i +=1){
 				_data = {
 					roomname : '',
 					users : ''
 				};
-			
-			for(var i = 0, list = data.talkMegData, len = list.length, content, ol, talkElement ; i < len ; i +=1){
 				content = list[i].Content;
 				talkElement = this.talkListTemp(undefined, list[i].users, content[content.length-1].date, content[content.length-1].talkCnt, data.date);
 				div.innerHTML = talkElement;
@@ -1285,8 +1301,13 @@ var cg = {
 			talkListOl.appendChild(frag);
 			
 			if(originData.complete !== true){				
-				// 채팅 룸 초기화.			
-				div.innerHTML = cg.talkPage.talkRoomTemp();
+				// 채팅 룸 초기화.
+				var newTalkFrag = doc.createDocumentFragment();
+				var talkMsg = cg.talkPage.paintOnceMsg(
+					newTalkFrag, data.isDouble, '', 
+					data.userInfo.profilePic, data.userInfo._myId, data.textValue, data.date
+				);					
+				div.innerHTML = cg.talkPage.talkRoomTemp(newTalkFrag.lastChild);
 				talkFrag.appendChild(div.firstChild);
 				_obj.allTalkWrap.appendChild(talkFrag);
 			};			
@@ -1327,6 +1348,48 @@ var cg = {
 				'</li>'; 
 				
 			return temp;
+		},
+		newMsgPaint : function(data){
+			var _this = this,
+				_obj = this.obj,
+				doc = document;
+			
+			var _roomId = 'room_' + data.userInfo.nowRoom,
+				roomEle = doc.getElementById(_roomId),
+				date = data.date,
+				time, timeFrag;
+			
+			switch(date.hours > 11){
+				case true : 
+					timeFrag = (date.hours === 12 ? 12 : date.hours - 12) + ':' + date.minutes;
+					time = '오후 ' + timeFrag;
+				case false : 
+					timeFrag = (date.hours === 12 ? 12 : date.hours - 12) + ':' + date.minutes;
+					time = '오전 ' + timeFrag;	
+			};
+							
+			roomEle.getElementsByClassName('lastMsgDate')[0].innerHTML = time;
+			roomEle.getElementsByClassName('talkMsg')[0].innerHTML = data.textValue;
+			
+			return _this.newMsgAlert(data);
+		},
+		newMsgAlert : function(data){
+			var _this = this,
+				_obj = this.obj,
+				doc = document;
+			
+			var ele = _obj.newMsgAlertPop,
+				timeFunc = null,
+				newValue;
+			//ele.getElementsByClassName('msgValue')[0].innerHTML = data.text
+			clearTimeout(timeFunc)
+			L(ele).addClass('on');
+			newValue = _obj.newMsgNumber.innerHTML === '' ? 0 : _obj.newMsgNumber.innerHTML;
+			_obj.newMsgNumber.innerHTML = newValue + 1;
+						
+			timeFunc = setTimeout(function(){
+				L(ele).removeClass('on');	
+			}, 5000);
 		}
 	},
 	// 채팅방에서 함수 정의.
@@ -1444,12 +1507,13 @@ var cg = {
 			L(initRoomObj).parentClassSearch('scrollArea').scrollTop = 99999;
 		},
 		// 채팅방 템플릿
-		talkRoomTemp : function(){			
+		talkRoomTemp : function(printOnce){						
 			var temp = 
 				 '<li class="allTalkList">' +
 					'<div class="scrollArea">' +
 						'<ol class="talkListArea">' +
 							// 나 또는 상대의 메시지가 들어가는 영역.
+							(printOnce ? printOnce.innerHTML : '') +
 						'</ol>' +
 					'</div>' +
 					'<aside class="textInputArea">' +
