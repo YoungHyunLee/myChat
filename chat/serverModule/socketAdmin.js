@@ -260,7 +260,7 @@ exports.newRoomCreate = function(data, socket){
 	    		if(list[i].username === jList[j]){
 	    			//console.log("room 가입했다!!!", newRoomName, list[i].socketId, socket.rooms);
 	    			// socket.id에 해당하는 그 사람에게 room을 가입시킴.
-	    			console.log(io.sockets.connected[list[i].socketId])
+	    			console.log('When this socket.id"s person is connecting, returnvalue object', typeof io.sockets.connected[list[i].socketId])
 	    			if(io.sockets.connected[list[i].socketId]){
 	    				io.sockets.connected[list[i].socketId].join(newRoomName)
 	    			} else {
@@ -529,9 +529,9 @@ exports.sendMsgRoom = function(data, socket){
 			{$push: {Content: talkMeg}},
 			{upsert:true}, function(err, doc){
 				if(err) { return console.error('Failed to update'); }
-				console.log('Update Success');
+				console.log('Update Success for chatMsg', doc);
 				var content = doc.Content,
-					idx = content.length-2 < 0 ? '' : content[content.length-2].idx;
+					idx = content.length === 0 ? '' : content[content.length-1].idx;
 				var isDouble =  idx === userInd;
 				console.log('idx', idx, userInd)
 				// data를 만들어서 클라이언트에게 보냄

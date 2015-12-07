@@ -866,14 +866,16 @@ var g = (function(){
 				// 서버로 보낼 이벤트 체크.
 				L(_obj.sendBtn).on('click', function(e){
 					e.preventDefault();
-					if(_obj.isNewRoomCreateComplete) return false;
 					
-					_obj.isNewRoomCreateComplete = true;
-					L(g.obj.loadingBar).addClass('on');
-					
+					if(cg.userInfo.nowRoom == null && _obj.isNewRoomCreateComplete) {
+						return false;
+					} else if(cg.userInfo.nowRoom == null ) {
+						_obj.isNewRoomCreateComplete = true;
+						L(g.obj.loadingBar).addClass('on');
+					};
 					if(e.target._data){
-						var selectTalkList = document.getElementById('room_' + e.target._data.room);
-						var selectForm = selectTalkList.getElementsByClassName('sendMsgForm')[0];
+						var ind = L(document.getElementById('room_' + e.target._data.room)).index();
+						var selectForm = L(_obj.allTalkWrap).eq(ind).getElementsByClassName('sendMsgForm')[0];
 						cg.talkPage.sendMsg(selectForm);
 					} else {
 						var otherData = _obj.allTalkWrap.lastChild._data.username;
@@ -936,19 +938,21 @@ var cg = {
 			if(data.isNewRoom === true) {// 새로운 사람에게 메시지를 받았을 때.
 				return _this.talkListAreaPage.newTalkList(data);
 			} else if(typeof data === 'string') {// 상대방의 이유로 발송이 실패했을 때.
+				g.viewGlobal.talkPage.obj.isNewRoomCreateComplete = false;
 				L(g.viewGlobal.obj.loadingBar).removeClass('on');
 				return g.viewGlobal.mainControl.alert(data);
 			} else if(data.complete) { // 내가 새로 방을 만들어서 내게 완료했다고 알려줌.				
 				g.viewGlobal.talkPage.obj.sendBtn._data = {
 					room : data._data.userInfo.nowRoom
 				};
+				cg.userInfo.nowRoom = data._data.userInfo.nowRoom;
 				_this.talkListAreaPage.newTalkList(data);
 				g.viewGlobal.talkPage.obj.isNewRoomCreateComplete = false;
 				return L(g.viewGlobal.obj.loadingBar).removeClass('on');
 			};
 			var gObj = g.viewGlobal.obj,
 				doc = document,
-				roomEle = doc.getElementById(data.userInfo.nowRoom),
+				roomEle = doc.getElementById('room_' + data.userInfo.nowRoom),
 				frag = doc.createDocumentFragment();
 			
 			_this.talkPage.paintOnceMsg(frag, data.isDouble, '', data.userInfo.profilePic, data.userInfo._myId, data.textValue, data.date);	
@@ -957,7 +961,7 @@ var cg = {
 			 var div = document.createElement('div');
 			div.innerHTML = talkElement.temp;
 			 */
-			var obj = gObj.allTalkWrap.eq(L(roomEle).index());
+			var obj = L(gObj.allTalkWrap).eq(L(roomEle).index());
 			if(data.isDouble){
 				obj.getElementsByClassName('talkListArea')[0].lastChild.getElementsByClassName('textTalkList')[0].appendChild(frag);
 				obj.lastChild.srcollTop = 99999;
